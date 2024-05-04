@@ -11,13 +11,21 @@
     "format": "prettier --check \"src//*.{ts,tsx,json,css,html}\"",
     "format:fix": "prettier --write \"src//*.{ts,tsx,json,css,html}\"",
     "preview": "vite preview",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest"
+  },
+  "vitest": {
+    "globals": true,
+    "environment": "jsdom",
+    "setupFiles": "./src/setupTests.ts"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.5",
+    "@testing-library/react": "^15.0.6",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
@@ -32,6 +40,7 @@
     "husky": "^9.0.11",
     "prettier": "^3.2.5",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "vitest": "^1.6.0"
   }
 }
