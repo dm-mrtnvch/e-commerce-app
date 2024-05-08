@@ -20,10 +20,13 @@ interface PageProps extends HTMLAttributes<HTMLDivElement> {
  * @param {object} other - Any other props to be passed to the underlying Box component.
  * @returns {React.ReactElement} The rendered page component.
  */
+
+const projectName = import.meta.env.VITE_PROJECT_NAME;
+
 const Page = forwardRef(({ children, title = '', ...other }: PageProps, ref: LegacyRef<HTMLDivElement> | undefined) => (
   <>
     <Helmet>
-      <title>{`${title} | E-commerce App | RS School`}</title>
+      <title>{`${title} | ${projectName} | RS School`}</title>
     </Helmet>
 
     <Box ref={ref} {...other}>
