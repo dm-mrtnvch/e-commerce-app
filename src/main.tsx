@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App.tsx';
 import { setupStore } from './redux/store.ts';
 import { createTheme } from './theme/create-theme.ts';
@@ -15,10 +16,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HelmetProvider>
       <Provider store={store}>
-        <CssVarsProvider theme={theme}>
-          <CssBaseline />
-          <App />
-        </CssVarsProvider>
+        <BrowserRouter>
+          <CssVarsProvider theme={theme}>
+            <CssBaseline />
+            <App />
+          </CssVarsProvider>
+        </BrowserRouter>
       </Provider>
     </HelmetProvider>
   </React.StrictMode>,
