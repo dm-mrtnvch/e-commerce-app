@@ -3,6 +3,7 @@ import { Button, IconButton, InputAdornment, Link, Stack, TextField, Typography 
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import { object, string } from 'yup';
+import { useLoginMutation } from '../../../redux/services/auth';
 
 const validationSchema = object({
   email: string()
@@ -21,6 +22,7 @@ const validationSchema = object({
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [login, { isLoading }] = useLoginMutation();
 
   const formik = useFormik({
     initialValues: {
@@ -29,7 +31,10 @@ const LoginForm = () => {
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+      login({
+        username: values.email.toLowerCase(),
+        password: values.password,
+      });
     },
   });
   const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
@@ -81,7 +86,7 @@ const LoginForm = () => {
               ),
             }}
           />
-          <Button fullWidth color='primary' variant='contained' type='submit' size='large'>
+          <Button fullWidth color='primary' variant='contained' type='submit' size='large' disabled={isLoading}>
             Login
           </Button>
         </Stack>
