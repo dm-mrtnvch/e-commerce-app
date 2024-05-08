@@ -1,9 +1,11 @@
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Button, IconButton, InputAdornment, Link, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, IconButton, InputAdornment, Link, Snackbar, Stack, TextField, Typography } from '@mui/material';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useFormik } from 'formik';
-import { useState } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import { object, string } from 'yup';
 import { useLoginMutation } from '../../../redux/services/auth';
+import { ErrorResponse } from '../../../types/common';
 
 const validationSchema = object({
   email: string()
@@ -21,10 +23,12 @@ const validationSchema = object({
 });
 
 const LoginForm = () => {
+  const [open, setOpen] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [login, { isLoading }] = useLoginMutation();
 
-  const formik = useFormik({
+  const [login, { isLoading, error, isError }] = useLoginMutation();
+
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, setErrors } = useFormik({
     initialValues: {
       email: '',
       password: '',
@@ -34,12 +38,26 @@ const LoginForm = () => {
       login({
         username: values.email.toLowerCase(),
         password: values.password,
-      });
+      })
+        .unwrap()
+        .catch((error) => {
+          setOpen(true);
+          if (error?.status === 400) {
+            setErrors({ email: 'Invalid email or password', password: 'Invalid email or password' });
+          }
+        });
     },
   });
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit } = formik;
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleClose = (_event?: SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -91,6 +109,17 @@ const LoginForm = () => {
           </Button>
         </Stack>
       </Stack>
+
+      <Snackbar
+        open={open}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleClose} severity='error' variant='filled'>
+          {isError && ((error as FetchBaseQueryError)?.data as ErrorResponse)?.message}
+        </Alert>
+      </Snackbar>
     </form>
   );
 };
