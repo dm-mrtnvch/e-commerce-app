@@ -3,8 +3,12 @@ import { Alert, Button, IconButton, InputAdornment, Link, Snackbar, Stack, TextF
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useFormik } from 'formik';
 import { SyntheticEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { object, string } from 'yup';
+import { useAppDispatch } from '../../../hooks/reduxHooks';
+import { setCredentials } from '../../../redux/features/authSlice';
 import { useLoginMutation } from '../../../redux/services/auth';
+import { HOME } from '../../../routes/routes';
 import { ErrorResponse } from '../../../types/common';
 
 const validationSchema = object({
@@ -23,6 +27,8 @@ const validationSchema = object({
 });
 
 const LoginForm = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [open, setOpen] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
@@ -40,6 +46,10 @@ const LoginForm = () => {
         password: values.password,
       })
         .unwrap()
+        .then((response) => {
+          dispatch(setCredentials(response));
+          navigate(HOME.path);
+        })
         .catch((error) => {
           setOpen(true);
           if (error?.status === 400) {
