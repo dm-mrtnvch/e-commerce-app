@@ -3,7 +3,7 @@ import { authApi } from './services/auth';
 import authReducer from './features/authSlice';
 
 const rootReducer = combineReducers({
-  authReducer,
+  auth: authReducer,
   [authApi.reducerPath]: authApi.reducer,
 });
 
