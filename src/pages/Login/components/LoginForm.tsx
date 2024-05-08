@@ -4,27 +4,12 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useFormik } from 'formik';
 import { SyntheticEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { object, string } from 'yup';
+import { loginFormValidationSchema } from '../../../helpers/validationHelper';
 import { useAppDispatch } from '../../../hooks/reduxHooks';
 import { setCredentials } from '../../../redux/features/authSlice';
 import { useLoginMutation } from '../../../redux/services/auth';
 import { HOME } from '../../../routes/routes';
 import { ErrorResponse } from '../../../types/common';
-
-const validationSchema = object({
-  email: string()
-    .email('Enter a valid email')
-    .matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{1,}$/i, 'Enter a valid email')
-    .required('Email is required'),
-  password: string()
-    .min(8, 'Password should be of minimum 8 characters length')
-    .matches(/^(?=.*[a-z])/, 'Password must contain at least one lowercase letter (a-z)')
-    .matches(/^(?=.*[A-Z])/, 'Password must contain at least one uppercase letter (A-Z)')
-    .matches(/^(?=.*\d)/, 'Password must contain at least one digit (0-9)')
-    .matches(/^(?=.*[@$!%*?&])/, 'Password must contain at least one special character (!@#$%^&*)')
-    .matches(/^(?=\S+$)/, 'Password must not contain leading or trailing whitespace')
-    .required('Password is required'),
-});
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -39,7 +24,7 @@ const LoginForm = () => {
       email: '',
       password: '',
     },
-    validationSchema: validationSchema,
+    validationSchema: loginFormValidationSchema,
     onSubmit: (values) => {
       login({
         username: values.email.toLowerCase(),
