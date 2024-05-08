@@ -1,7 +1,9 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { authApi } from './services/auth';
+import authReducer from './features/authSlice';
 
 const rootReducer = combineReducers({
+  authReducer,
   [authApi.reducerPath]: authApi.reducer,
 });
 
