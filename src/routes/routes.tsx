@@ -1,4 +1,4 @@
-import { Home, Login } from '@mui/icons-material';
+import { Home, Login, PersonAdd } from '@mui/icons-material';
 
 export const HOME = {
   path: '/',
@@ -10,4 +10,10 @@ export const LOGIN = {
   path: '/login',
   title: 'Login',
   icon: <Login />,
+};
+
+export const REGISTRATION = {
+  path: '/registration',
+  title: 'Registration',
+  icon: <PersonAdd />,
 };

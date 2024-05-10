@@ -8,6 +8,7 @@ const Routes = () => {
       {/* TODO: add layout */}
       <Route index path={ROUTES.HOME.path} element={<PAGES.Home />} />
       <Route path={ROUTES.LOGIN.path} element={<PAGES.Login />} />
+      <Route path={ROUTES.REGISTRATION.path} element={<PAGES.Registration />} />
       <Route path='*' element={<Navigate to='/404' replace />} />
     </ReactRouterRoutes>
   );
