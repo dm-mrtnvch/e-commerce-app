@@ -11,3 +11,8 @@ export const LOGIN = {
   title: 'Login',
   icon: <Login />,
 };
+
+export const PAGE_404 = {
+  path: '/404',
+  title: 'Sorry, page not found',
+};
