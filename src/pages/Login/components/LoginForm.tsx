@@ -3,12 +3,12 @@ import { Alert, Button, IconButton, InputAdornment, Link, Snackbar, Stack, TextF
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { useFormik } from 'formik';
 import { SyntheticEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { loginFormValidationSchema } from '../../../helpers/validationHelper';
 import { useAppDispatch } from '../../../hooks/reduxHooks';
 import { setCredentials } from '../../../redux/features/authSlice';
 import { useLoginMutation } from '../../../redux/services/auth';
-import { HOME } from '../../../routes/routes';
+import { HOME, REGISTRATION } from '../../../routes/routes';
 import { ErrorResponse } from '../../../types/common';
 
 const LoginForm = () => {
@@ -62,8 +62,10 @@ const LoginForm = () => {
             Sign in to E-commerce App
           </Typography>
           <Typography variant='subtitle2'>
-            {/* TODO: add link to register page */}
-            New user? <Link>Create account</Link>
+            New user?{' '}
+            <Link component={RouterLink} to={REGISTRATION.path}>
+              Create account
+            </Link>
           </Typography>
         </Stack>
         <Stack spacing={2}>
