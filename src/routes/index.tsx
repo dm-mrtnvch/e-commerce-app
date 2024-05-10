@@ -9,6 +9,7 @@ const Routes = () => {
       <Route index path={ROUTES.HOME.path} element={<PAGES.Home />} />
       <Route path={ROUTES.LOGIN.path} element={<PAGES.Login />} />
       <Route path={ROUTES.REGISTRATION.path} element={<PAGES.Registration />} />
+      <Route path={ROUTES.PAGE_404.path} element={<PAGES.Page404 />} />
       <Route path='*' element={<Navigate to='/404' replace />} />
     </ReactRouterRoutes>
   );

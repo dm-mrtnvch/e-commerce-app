@@ -17,3 +17,8 @@ export const REGISTRATION = {
   title: 'Registration',
   icon: <PersonAdd />,
 };
+
+export const PAGE_404 = {
+  path: '/404',
+  title: 'Sorry, page not found',
+};
