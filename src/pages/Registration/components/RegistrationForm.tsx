@@ -1,4 +1,5 @@
 import { ChangeEvent, SyntheticEvent, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
@@ -9,6 +10,7 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
+  Link,
   IconButton,
   InputAdornment,
   InputLabel,
@@ -21,6 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 import { registrationFormValidationSchema } from '../../../helpers/validationHelper.ts';
+import { LOGIN } from '../../../routes/routes.tsx';
 
 interface Address {
   street: string;
@@ -106,6 +109,12 @@ const RegistrationForm = () => {
         <Stack spacing={3} mb={3}>
           <Typography fontWeight='bold' variant='h5'>
             Registration. Create a New Account
+          </Typography>
+          <Typography variant='subtitle2'>
+            Already have an account?{' '}
+            <Link component={RouterLink} to={LOGIN.path}>
+              Sign in
+            </Link>
           </Typography>
         </Stack>
         <Typography variant='h6' mb={1}>
