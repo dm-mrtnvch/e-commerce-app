@@ -1,11 +1,13 @@
-import { SyntheticEvent, useState } from 'react';
+import { ChangeEvent, SyntheticEvent, useState } from 'react';
 import { useFormik } from 'formik';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
@@ -14,6 +16,7 @@ import {
   Select,
   Snackbar,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from '@mui/material';
@@ -24,6 +27,7 @@ interface Address {
   city: string;
   postalCode: string;
   country: string;
+  isDefault: boolean;
 }
 
 interface FormValues {
@@ -34,15 +38,17 @@ interface FormValues {
   dateOfBirth: string;
   shippingAddress: Address;
   billingAddress: Address;
+  useShippingAsBilling: boolean;
 }
 
 const RegistrationForm = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
+  const [useShippingAsBilling, setUseShippingAsBilling] = useState<boolean>(false);
 
   const countries = ['Kazakhstan', 'Belarus', 'Poland'];
 
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit } = useFormik({
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue } = useFormik({
     initialValues: {
       email: '',
       password: '',
@@ -54,13 +60,16 @@ const RegistrationForm = () => {
         city: '',
         postalCode: '',
         country: '',
+        isDefault: true,
       },
       billingAddress: {
         street: '',
         city: '',
         postalCode: '',
         country: '',
+        isDefault: true,
       },
+      useShippingAsBilling: false,
     },
     validationSchema: registrationFormValidationSchema,
     onSubmit: (values: FormValues) => {
@@ -76,6 +85,19 @@ const RegistrationForm = () => {
     }
 
     setOpen(false);
+  };
+
+  const handleUseShippingAsBillingChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked;
+    setUseShippingAsBilling(isChecked);
+    setFieldValue('useShippingAsBilling', isChecked);
+
+    if (isChecked) {
+      setFieldValue('billingAddress', {
+        ...values.shippingAddress,
+        isDefault: values.billingAddress.isDefault,
+      });
+    }
   };
 
   return (
@@ -224,66 +246,95 @@ const RegistrationForm = () => {
                   </Typography>
                 )}
               </FormControl>
+              <FormControlLabel
+                control={<Switch color='primary' />}
+                label='Set as default address'
+                name='shippingAddress.isDefault'
+                checked={values.shippingAddress.isDefault}
+                onChange={handleChange}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    color='primary'
+                    checked={useShippingAsBilling}
+                    onChange={handleUseShippingAsBillingChange}
+                  />
+                }
+                label='Also use as billing address'
+              />
             </Stack>
           </Grid>
-          <Grid item xs={12}>
-            <Stack spacing={1}>
-              <Typography variant='h6'>Billing Address</Typography>
-              <TextField
-                fullWidth
-                name='billingAddress.street'
-                label='Street Address'
-                value={values.billingAddress.street}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.billingAddress?.street && Boolean(errors.billingAddress?.street)}
-                helperText={touched.billingAddress?.street && errors.billingAddress?.street}
-              />
-              <TextField
-                fullWidth
-                name='billingAddress.city'
-                label='City'
-                value={values.billingAddress.city}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.billingAddress?.city && Boolean(errors.billingAddress?.city)}
-                helperText={touched.billingAddress?.city && errors.billingAddress?.city}
-              />
-              <TextField
-                fullWidth
-                name='billingAddress.postalCode'
-                label='Postal Code'
-                value={values.billingAddress.postalCode}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.billingAddress?.postalCode && Boolean(errors.billingAddress?.postalCode)}
-                helperText={touched.billingAddress?.postalCode && errors.billingAddress?.postalCode}
-              />
-              <FormControl fullWidth error={touched.billingAddress?.country && Boolean(errors.billingAddress?.country)}>
-                <InputLabel id='billingAddress.country-label'>Country</InputLabel>
-                <Select
-                  labelId='billingAddress.country-label'
-                  id='billingAddress.country'
-                  name='billingAddress.country'
-                  value={values.billingAddress.country}
+          {!useShippingAsBilling && (
+            <Grid item xs={12}>
+              <Stack spacing={1}>
+                <Typography variant='h6'>Billing Address</Typography>
+                <TextField
+                  fullWidth
+                  name='billingAddress.street'
+                  label='Street Address'
+                  value={values.billingAddress.street}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  label='Country'
+                  error={touched.billingAddress?.street && Boolean(errors.billingAddress?.street)}
+                  helperText={touched.billingAddress?.street && errors.billingAddress?.street}
+                />
+                <TextField
+                  fullWidth
+                  name='billingAddress.city'
+                  label='City'
+                  value={values.billingAddress.city}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.billingAddress?.city && Boolean(errors.billingAddress?.city)}
+                  helperText={touched.billingAddress?.city && errors.billingAddress?.city}
+                />
+                <TextField
+                  fullWidth
+                  name='billingAddress.postalCode'
+                  label='Postal Code'
+                  value={values.billingAddress.postalCode}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.billingAddress?.postalCode && Boolean(errors.billingAddress?.postalCode)}
+                  helperText={touched.billingAddress?.postalCode && errors.billingAddress?.postalCode}
+                />
+                <FormControl
+                  fullWidth
+                  error={touched.billingAddress?.country && Boolean(errors.billingAddress?.country)}
                 >
-                  {countries.map((country) => (
-                    <MenuItem key={country} value={country}>
-                      {country}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {touched.billingAddress?.country && errors.billingAddress?.country && (
-                  <Typography variant='body2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
-                    {errors.billingAddress?.country}
-                  </Typography>
-                )}
-              </FormControl>
-            </Stack>
-          </Grid>
+                  <InputLabel id='billingAddress.country-label'>Country</InputLabel>
+                  <Select
+                    labelId='billingAddress.country-label'
+                    id='billingAddress.country'
+                    name='billingAddress.country'
+                    value={values.billingAddress.country}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    label='Country'
+                  >
+                    {countries.map((country) => (
+                      <MenuItem key={country} value={country}>
+                        {country}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {touched.billingAddress?.country && errors.billingAddress?.country && (
+                    <Typography variant='body2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                      {errors.billingAddress?.country}
+                    </Typography>
+                  )}
+                </FormControl>
+                <FormControlLabel
+                  control={<Switch color='primary' />}
+                  label='Set as default address'
+                  name='billingAddress.isDefault'
+                  checked={values.billingAddress.isDefault}
+                  onChange={handleChange}
+                />
+              </Stack>
+            </Grid>
+          )}
         </Grid>
         <Button fullWidth type='submit' variant='contained' color='primary' sx={{ mt: 2 }}>
           Sign up

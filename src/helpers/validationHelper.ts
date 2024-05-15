@@ -1,4 +1,4 @@
-import { object, string, date } from 'yup';
+import { object, string, date, mixed } from 'yup';
 
 export const loginFormValidationSchema = object({
   email: string()
@@ -59,5 +59,15 @@ export const registrationFormValidationSchema = object().shape({
     .max(new Date(new Date().setFullYear(new Date().getFullYear() - 13)), 'You must be at least 13 years old')
     .required('Date of birth is required'),
   shippingAddress: addressSchema,
-  billingAddress: addressSchema,
+  billingAddress: mixed().when('useShippingAsBilling', {
+    is: (value: boolean) => !value,
+    then: () => addressSchema,
+    otherwise: () =>
+      object().shape({
+        street: string().notRequired(),
+        city: string().notRequired(),
+        postalCode: string().notRequired(),
+        country: string().notRequired(),
+      }),
+  }),
 });
