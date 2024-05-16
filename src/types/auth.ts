@@ -11,3 +11,22 @@ export interface LoginRequest {
   password: string;
   grant_type?: string;
 }
+
+export type RegisterResponseData = {
+  id: string | null;
+  version: number | null;
+
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: string | null;
+
+  billingAddressIds: string[] | null;
+  shippingAddressIds: string[] | null;
+  defaultBillingAddressId: string | null;
+  defaultShippingAddressId: string | null;
+  addresses: [];
+  //customer: any;
+  token: string | null;
+  access_token: string | null;
+};

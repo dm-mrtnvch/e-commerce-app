@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { registrationFormValidationSchema } from '../../../helpers/validationHelper.ts';
 import { LOGIN } from '../../../routes/routes.tsx';
+import { useRegisterMutation } from '../../../redux/services/auth.ts';
 
 interface Address {
   street: string;
@@ -48,6 +49,8 @@ const RegistrationForm = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [useShippingAsBilling, setUseShippingAsBilling] = useState<boolean>(false);
+
+  const [register] = useRegisterMutation();
 
   const countries = ['Kazakhstan', 'Belarus', 'Poland'];
 
@@ -75,8 +78,16 @@ const RegistrationForm = () => {
       useShippingAsBilling: false,
     },
     validationSchema: registrationFormValidationSchema,
-    onSubmit: (values: FormValues) => {
+    onSubmit: async (values: FormValues) => {
       console.log('values', values);
+      try {
+        const response = await register(values).unwrap();
+        console.log('Registration successful', response);
+        // navigate('/');
+      } catch (error) {
+        console.error('Registration failed', error);
+        setOpen(true);
+      }
     },
   });
 
