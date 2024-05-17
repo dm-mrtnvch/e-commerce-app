@@ -1,6 +1,7 @@
 .registration {
   display: flex;
   flex-direction: row;
+  height: 100vh;
 
   &__left,
   &__right {
@@ -8,7 +9,7 @@
   }
 
   &__left {
-    flex: 3;
+    flex: 2;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,6 +24,7 @@
     }
 
     @media screen and (max-width: 1024px) {
+      flex: 1;
       padding: 2rem 2rem;
 
       img {
@@ -32,10 +34,7 @@
   }
 
   &__right {
-    flex: 2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    flex: 1;
     background-color: var(--mui-palette-common-background);
 
     & > form {
