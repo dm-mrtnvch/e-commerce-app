@@ -42,6 +42,9 @@ export const authApi = createApi({
           password,
           grant_type: 'password',
         },
+        headers: {
+          Authorization: `Basic ${btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)}`,
+        },
       }),
     }),
     register: builder.mutation<RegisterResponseData, { token: string; customer: Customer }>({
