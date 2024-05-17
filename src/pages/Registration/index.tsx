@@ -23,7 +23,7 @@ const RegistrationPage = () => {
       <Box className={styles.registrationLeft}>
         <img src={registrationIllustration} alt='Registration' />
       </Box>
-      <Box className={styles.registrationRight}>
+      <Box sx={{ overflowY: 'auto' }} className={styles.registrationRight}>
         <RegistrationForm />
       </Box>
     </Page>
