@@ -30,6 +30,8 @@ import {
 } from '../../../redux/services/auth.ts';
 import { HOME, LOGIN } from '../../../routes/routes.tsx';
 import { COUNTRIES, CUSTOMER_INITIAL_VALUES } from '../constants.ts';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { ErrorResponse } from '../../../types/common.ts';
 
 interface Address {
   street: string;
@@ -57,10 +59,11 @@ const RegistrationForm = () => {
   const [useShippingAsBilling, setUseShippingAsBilling] = useState<boolean>(false);
 
   const [login] = useLoginMutation();
-  const [register, { isSuccess: isSuccessRegister }] = useRegisterMutation();
+  const [register, { isSuccess: isSuccessRegister, error: registerError, isError: isRegisterError }] =
+    useRegisterMutation();
   const [clientCredentialsFlowAuth] = useClientCredentialsFlowAuthMutation();
 
-  const { values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue } = useFormik({
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue, setErrors } = useFormik({
     initialValues: CUSTOMER_INITIAL_VALUES,
     validationSchema: registrationFormValidationSchema,
     onSubmit: async (values: FormValues) => {
@@ -77,8 +80,13 @@ const RegistrationForm = () => {
                   navigate(HOME.path);
                 });
             })
-            .catch(() => {
+            .catch((error) => {
               setOpen(true);
+              if (error?.status === 400) {
+                setErrors({
+                  email: 'Email already exists. Provide a new one.',
+                });
+              }
             });
         });
     },
@@ -366,7 +374,8 @@ const RegistrationForm = () => {
           </Alert>
         ) : (
           <Alert onClose={handleClose} severity='error' variant='filled'>
-            Registration failed. Please try again.
+            {(isRegisterError && ((registerError as FetchBaseQueryError)?.data as ErrorResponse)?.message) ||
+              'Registration failed. Please try again.'}
           </Alert>
         )}
       </Snackbar>
