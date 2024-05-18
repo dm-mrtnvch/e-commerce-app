@@ -1,6 +1,3 @@
-import { ChangeEvent, SyntheticEvent, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { useFormik } from 'formik';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
   Alert,
@@ -10,10 +7,10 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
-  Link,
   IconButton,
   InputAdornment,
   InputLabel,
+  Link,
   MenuItem,
   Select,
   Snackbar,
@@ -22,8 +19,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useFormik } from 'formik';
+import { ChangeEvent, SyntheticEvent, useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { registrationFormValidationSchema } from '../../../helpers/validationHelper.ts';
-import { LOGIN } from '../../../routes/routes.tsx';
+import {
+  useClientCredentialsFlowAuthMutation,
+  useLoginMutation,
+  useRegisterMutation,
+} from '../../../redux/services/auth.ts';
+import { HOME, LOGIN } from '../../../routes/routes.tsx';
+import { COUNTRIES, CUSTOMER_INITIAL_VALUES } from '../constants.ts';
 
 interface Address {
   street: string;
@@ -45,38 +51,36 @@ interface FormValues {
 }
 
 const RegistrationForm = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [useShippingAsBilling, setUseShippingAsBilling] = useState<boolean>(false);
 
-  const countries = ['Kazakhstan', 'Belarus', 'Poland'];
+  const [login] = useLoginMutation();
+  const [register, { isSuccess: isSuccessRegister }] = useRegisterMutation();
+  const [clientCredentialsFlowAuth] = useClientCredentialsFlowAuthMutation();
 
   const { values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue } = useFormik({
-    initialValues: {
-      email: '',
-      password: '',
-      firstName: '',
-      lastName: '',
-      dateOfBirth: '',
-      shippingAddress: {
-        street: '',
-        city: '',
-        postalCode: '',
-        country: '',
-        isDefault: true,
-      },
-      billingAddress: {
-        street: '',
-        city: '',
-        postalCode: '',
-        country: '',
-        isDefault: true,
-      },
-      useShippingAsBilling: false,
-    },
+    initialValues: CUSTOMER_INITIAL_VALUES,
     validationSchema: registrationFormValidationSchema,
-    onSubmit: (values: FormValues) => {
-      console.log('values', values);
+    onSubmit: async (values: FormValues) => {
+      await clientCredentialsFlowAuth()
+        .unwrap()
+        .then(async (response) => {
+          register({ token: response.access_token as string, customer: values })
+            .unwrap()
+            .then(() => {
+              setOpen(true);
+              login({ username: values.email, password: values.password })
+                .unwrap()
+                .then(() => {
+                  navigate(HOME.path);
+                });
+            })
+            .catch(() => {
+              setOpen(true);
+            });
+        });
     },
   });
 
@@ -197,7 +201,7 @@ const RegistrationForm = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Stack spacing={1}>
+            <Stack spacing={2}>
               <Typography variant='h6'>Shipping Address</Typography>
               <TextField
                 fullWidth
@@ -243,7 +247,7 @@ const RegistrationForm = () => {
                   onBlur={handleBlur}
                   label='Country'
                 >
-                  {countries.map((country) => (
+                  {COUNTRIES.map((country) => (
                     <MenuItem key={country} value={country}>
                       {country}
                     </MenuItem>
@@ -276,7 +280,7 @@ const RegistrationForm = () => {
           </Grid>
           {!useShippingAsBilling && (
             <Grid item xs={12}>
-              <Stack spacing={1}>
+              <Stack spacing={2}>
                 <Typography variant='h6'>Billing Address</Typography>
                 <TextField
                   fullWidth
@@ -322,7 +326,7 @@ const RegistrationForm = () => {
                     onBlur={handleBlur}
                     label='Country'
                   >
-                    {countries.map((country) => (
+                    {COUNTRIES.map((country) => (
                       <MenuItem key={country} value={country}>
                         {country}
                       </MenuItem>
@@ -349,15 +353,22 @@ const RegistrationForm = () => {
           Sign up
         </Button>
       </Box>
+
       <Snackbar
         open={open}
         autoHideDuration={4000}
         onClose={handleClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert onClose={handleClose} severity='error' variant='filled'>
-          Registration failed. Please try again.
-        </Alert>
+        {isSuccessRegister ? (
+          <Alert onClose={handleClose} severity='success' variant='filled'>
+            Registration successful. You will be redirected to the home page.
+          </Alert>
+        ) : (
+          <Alert onClose={handleClose} severity='error' variant='filled'>
+            Registration failed. Please try again.
+          </Alert>
+        )}
       </Snackbar>
     </form>
   );
