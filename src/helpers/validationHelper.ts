@@ -1,4 +1,5 @@
 import { object, string, date, mixed } from 'yup';
+import { COUNTRIES_ENUM } from '../pages/Registration/constants.ts';
 
 export const loginFormValidationSchema = object({
   email: string()
@@ -15,17 +16,17 @@ export const loginFormValidationSchema = object({
     .required('Password is required'),
 });
 
-const countries = ['Kazakhstan', 'Belarus', 'Poland'] as const;
+const countries = ['KZ', 'BY', 'PL'] as const;
 type Country = (typeof countries)[number];
 
 const postalCodeRegex: Record<Country, RegExp> = {
-  Kazakhstan: /^[0-9]{6}$/, // example: 476210
-  Belarus: /^[0-9]{6}$/, // example: 220099
-  Poland: /^[0-9]{2}-[0-9]{3}$/, // example: 01-797
+  KZ: /^[0-9]{6}$/, // example: 476210
+  BY: /^[0-9]{6}$/, // example: 220099
+  PL: /^[0-9]{2}-[0-9]{3}$/, // example: 01-797
 };
 
 const addressSchema = object().shape({
-  street: string().required('Street address is required'),
+  streetName: string().required('Street address is required'),
   city: string()
     .matches(/^[a-zA-Z\s]+$/, 'City cannot contain special characters or numbers')
     .required('City is required'),
@@ -38,7 +39,7 @@ const addressSchema = object().shape({
       }
       return true;
     }),
-  country: string().oneOf(countries, 'Invalid country').required('Country is required'),
+  country: string().oneOf(Object.values(COUNTRIES_ENUM), 'Invalid country').required('Country is required'),
 });
 
 export const registrationFormValidationSchema = object().shape({
@@ -64,7 +65,7 @@ export const registrationFormValidationSchema = object().shape({
     then: () => addressSchema,
     otherwise: () =>
       object().shape({
-        street: string().notRequired(),
+        streetName: string().notRequired(),
         city: string().notRequired(),
         postalCode: string().notRequired(),
         country: string().notRequired(),

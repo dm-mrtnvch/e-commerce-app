@@ -34,6 +34,14 @@ export type RegisterResponseData = {
   access_token: string | null;
 };
 
+export interface Address {
+  streetName: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}
+
 export interface Customer {
   key?: string;
   customerNumber?: string;
@@ -48,10 +56,10 @@ export interface Customer {
   dateOfBirth?: string;
   companyName?: string;
   vatId?: string;
-  addresses?: [];
-  defaultShippingAddress?: number;
+  addresses: Address[];
+  defaultShippingAddress: number | null;
   shippingAddresses?: number[];
-  defaultBillingAddress?: number;
+  defaultBillingAddress: number | null;
   billingAddresses?: number[];
   isEmailVerified?: boolean;
 }
