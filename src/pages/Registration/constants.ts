@@ -1,4 +1,8 @@
-export const COUNTRIES = ['Kazakhstan', 'Belarus', 'Poland'];
+export const COUNTRIES_ENUM = {
+  Kazakhstan: 'KZ',
+  Belarus: 'BY',
+  Poland: 'PL',
+};
 
 export const CUSTOMER_INITIAL_VALUES = {
   email: '',
@@ -6,19 +10,22 @@ export const CUSTOMER_INITIAL_VALUES = {
   firstName: '',
   lastName: '',
   dateOfBirth: '',
+  addresses: [],
   shippingAddress: {
-    street: '',
+    streetName: '',
     city: '',
     postalCode: '',
     country: '',
-    isDefault: true,
   },
+  defaultShippingAddress: null,
+  shippingAddresses: [],
   billingAddress: {
-    street: '',
+    streetName: '',
     city: '',
     postalCode: '',
     country: '',
-    isDefault: true,
   },
+  defaultBillingAddress: null,
+  billingAddresses: [],
   useShippingAsBilling: false,
 };

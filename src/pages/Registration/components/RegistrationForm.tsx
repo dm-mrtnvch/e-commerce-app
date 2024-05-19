@@ -29,17 +29,10 @@ import {
   useRegisterMutation,
 } from '../../../redux/services/auth.ts';
 import { HOME, LOGIN } from '../../../routes/routes.tsx';
-import { COUNTRIES, CUSTOMER_INITIAL_VALUES } from '../constants.ts';
+import { COUNTRIES_ENUM, CUSTOMER_INITIAL_VALUES } from '../constants.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { ErrorResponse } from '../../../types/common.ts';
-
-interface Address {
-  street: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
-}
+import { Address } from '../../../types/auth.ts';
 
 interface FormValues {
   email: string;
@@ -50,6 +43,8 @@ interface FormValues {
   shippingAddress: Address;
   billingAddress: Address;
   useShippingAsBilling: boolean;
+  defaultShippingAddress: number | null;
+  defaultBillingAddress: number | null;
 }
 
 const RegistrationForm = () => {
@@ -67,10 +62,19 @@ const RegistrationForm = () => {
     initialValues: CUSTOMER_INITIAL_VALUES,
     validationSchema: registrationFormValidationSchema,
     onSubmit: async (values: FormValues) => {
+      const updatedValues = {
+        ...values,
+        addresses: [values.billingAddress, values.shippingAddress],
+        billingAddresses: [0],
+        shippingAddresses: [1],
+        defaultBillingAddress: values.defaultBillingAddress !== null ? 0 : null,
+        defaultShippingAddress: values.defaultShippingAddress !== null ? 1 : null,
+      };
+
       await clientCredentialsFlowAuth()
         .unwrap()
         .then(async (response) => {
-          register({ token: response.access_token as string, customer: values })
+          register({ token: response.access_token as string, customer: updatedValues })
             .unwrap()
             .then(() => {
               setOpen(true);
@@ -110,8 +114,13 @@ const RegistrationForm = () => {
     if (isChecked) {
       setFieldValue('billingAddress', {
         ...values.shippingAddress,
-        isDefault: values.billingAddress.isDefault,
       });
+
+      if (values.defaultShippingAddress !== null) {
+        setFieldValue('defaultBillingAddress', 0);
+      } else {
+        setFieldValue('defaultBillingAddress', null);
+      }
     }
   };
 
@@ -213,13 +222,13 @@ const RegistrationForm = () => {
               <Typography variant='h6'>Shipping Address</Typography>
               <TextField
                 fullWidth
-                name='shippingAddress.street'
+                name='shippingAddress.streetName'
                 label='Street Address'
-                value={values.shippingAddress.street}
+                value={values.shippingAddress.streetName}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                error={touched.shippingAddress?.street && Boolean(errors.shippingAddress?.street)}
-                helperText={touched.shippingAddress?.street && errors.shippingAddress?.street}
+                error={touched.shippingAddress?.streetName && Boolean(errors.shippingAddress?.streetName)}
+                helperText={touched.shippingAddress?.streetName && errors.shippingAddress?.streetName}
               />
               <TextField
                 fullWidth
@@ -251,13 +260,13 @@ const RegistrationForm = () => {
                   id='shippingAddress.country'
                   name='shippingAddress.country'
                   value={values.shippingAddress.country}
-                  onChange={handleChange}
+                  onChange={(event) => setFieldValue('shippingAddress.country', event.target.value)}
                   onBlur={handleBlur}
                   label='Country'
                 >
-                  {COUNTRIES.map((country) => (
-                    <MenuItem key={country} value={country}>
-                      {country}
+                  {Object.entries(COUNTRIES_ENUM).map(([countryName, countryCode]) => (
+                    <MenuItem key={countryCode} value={countryCode}>
+                      {countryName}
                     </MenuItem>
                   ))}
                 </Select>
@@ -269,10 +278,12 @@ const RegistrationForm = () => {
               </FormControl>
               <FormControlLabel
                 control={<Switch color='primary' />}
-                label='Set as default address'
-                name='shippingAddress.isDefault'
-                checked={values.shippingAddress.isDefault}
-                onChange={handleChange}
+                label='Set as default shipping address'
+                name='defaultShippingAddress'
+                checked={values.defaultShippingAddress !== null}
+                onChange={(_event, checked) => {
+                  setFieldValue('defaultShippingAddress', checked ? 1 : null);
+                }}
               />
               <FormControlLabel
                 control={
@@ -292,13 +303,13 @@ const RegistrationForm = () => {
                 <Typography variant='h6'>Billing Address</Typography>
                 <TextField
                   fullWidth
-                  name='billingAddress.street'
+                  name='billingAddress.streetName'
                   label='Street Address'
-                  value={values.billingAddress.street}
+                  value={values.billingAddress.streetName}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.billingAddress?.street && Boolean(errors.billingAddress?.street)}
-                  helperText={touched.billingAddress?.street && errors.billingAddress?.street}
+                  error={touched.billingAddress?.streetName && Boolean(errors.billingAddress?.streetName)}
+                  helperText={touched.billingAddress?.streetName && errors.billingAddress?.streetName}
                 />
                 <TextField
                   fullWidth
@@ -330,13 +341,13 @@ const RegistrationForm = () => {
                     id='billingAddress.country'
                     name='billingAddress.country'
                     value={values.billingAddress.country}
-                    onChange={handleChange}
+                    onChange={(event) => setFieldValue('billingAddress.country', event.target.value)}
                     onBlur={handleBlur}
                     label='Country'
                   >
-                    {COUNTRIES.map((country) => (
-                      <MenuItem key={country} value={country}>
-                        {country}
+                    {Object.entries(COUNTRIES_ENUM).map(([countryName, countryCode]) => (
+                      <MenuItem key={countryCode} value={countryCode}>
+                        {countryName}
                       </MenuItem>
                     ))}
                   </Select>
@@ -348,10 +359,12 @@ const RegistrationForm = () => {
                 </FormControl>
                 <FormControlLabel
                   control={<Switch color='primary' />}
-                  label='Set as default address'
-                  name='billingAddress.isDefault'
-                  checked={values.billingAddress.isDefault}
-                  onChange={handleChange}
+                  label='Set as default billing address'
+                  name='defaultBillingAddress'
+                  checked={values.defaultBillingAddress !== null}
+                  onChange={(_event, checked) => {
+                    setFieldValue('defaultBillingAddress', checked ? 0 : null);
+                  }}
                 />
               </Stack>
             </Grid>
