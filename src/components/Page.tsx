@@ -1,9 +1,12 @@
 import { styled } from '@mui/material';
 import { forwardRef, HTMLAttributes, LegacyRef, ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
+import Header from './Header.tsx';
 
 const Box = styled('div')(() => ({
   minHeight: '100vh',
+  position: 'relative',
+  paddingTop: '80px',
 }));
 
 interface PageProps extends HTMLAttributes<HTMLDivElement> {
@@ -28,7 +31,7 @@ const Page = forwardRef(({ children, title = '', ...other }: PageProps, ref: Leg
     <Helmet>
       <title>{`${title} | ${projectName} | RS School`}</title>
     </Helmet>
-
+    <Header />
     <Box ref={ref} {...other}>
       {children}
     </Box>

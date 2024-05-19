@@ -39,7 +39,6 @@ export interface Address {
   city: string;
   postalCode: string;
   country: string;
-  isDefault: boolean;
 }
 
 export interface Customer {

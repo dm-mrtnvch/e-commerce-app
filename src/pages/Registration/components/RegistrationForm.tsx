@@ -33,6 +33,8 @@ import { COUNTRIES_ENUM, CUSTOMER_INITIAL_VALUES } from '../constants.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { ErrorResponse } from '../../../types/common.ts';
 import { Address } from '../../../types/auth.ts';
+import { setCredentials } from '../../../redux/features/authSlice.ts';
+import { useAppDispatch } from '../../../hooks/reduxHooks.tsx';
 
 interface FormValues {
   email: string;
@@ -49,6 +51,7 @@ interface FormValues {
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [useShippingAsBilling, setUseShippingAsBilling] = useState<boolean>(false);
@@ -80,7 +83,8 @@ const RegistrationForm = () => {
               setOpen(true);
               login({ username: values.email, password: values.password })
                 .unwrap()
-                .then(() => {
+                .then((response) => {
+                  dispatch(setCredentials(response));
                   navigate(HOME.path);
                 });
             })
