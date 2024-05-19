@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { useAppSelector } from '../hooks/reduxHooks.tsx';
+import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks.tsx';
 import { AppBar, Toolbar, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/ExitToApp';
 import logoIcon from '../assets/icons/logo.png';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import * as ROUTES from '../routes/routes';
 import styles from './Header.module.scss';
+import { resetCredentials } from '../redux/features/authSlice.ts';
+import { LOGIN } from '../routes/routes';
 
 const Header = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { credentials } = useAppSelector((state) => state.auth);
 
@@ -18,7 +22,10 @@ const Header = () => {
 
   const navLinks = [ROUTES.HOME, ROUTES.ABOUT_US, ROUTES.CATALOG, ROUTES.CART, ROUTES.REGISTRATION, ROUTES.LOGIN];
 
-  const onLogout = () => {};
+  const onLogout = () => {
+    dispatch(resetCredentials());
+    navigate(LOGIN.path, { replace: true });
+  };
 
   return (
     <>
