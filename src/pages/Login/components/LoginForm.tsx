@@ -70,7 +70,6 @@ const LoginForm = () => {
         </Stack>
         <Stack spacing={2}>
           <TextField
-            autoFocus
             fullWidth
             name='email'
             label='Email address'
