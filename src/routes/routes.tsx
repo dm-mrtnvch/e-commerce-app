@@ -1,4 +1,4 @@
-import { Home, Login, PersonAdd, ShoppingCart, PersonSearch } from '@mui/icons-material';
+import { Home, Login, PersonAdd, ShoppingCart, PersonSearch, Apps } from '@mui/icons-material';
 
 export const HOME = {
   path: '/',
@@ -27,7 +27,7 @@ export const ABOUT_US = {
 export const CATALOG = {
   path: '/catalog',
   title: 'Catalog',
-  icon: <PersonAdd />,
+  icon: <Apps />,
 };
 
 export const CART = {
