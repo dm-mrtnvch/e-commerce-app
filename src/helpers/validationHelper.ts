@@ -45,10 +45,12 @@ const addressSchema = object().shape({
 export const registrationFormValidationSchema = object().shape({
   email: string().email('Invalid email address').required('Email is required'),
   password: string()
-    .min(8, 'Password must be at least 8 characters')
-    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .matches(/[0-9]/, 'Password must contain at least one number')
+    .min(8, 'Password should be of minimum 8 characters length')
+    .matches(/^(?=.*[a-z])/, 'Password must contain at least one lowercase letter (a-z)')
+    .matches(/^(?=.*[A-Z])/, 'Password must contain at least one uppercase letter (A-Z)')
+    .matches(/^(?=.*\d)/, 'Password must contain at least one digit (0-9)')
+    .matches(/^(?=.*[@$!%*?&])/, 'Password must contain at least one special character (!@#$%^&*)')
+    .matches(/^(?=\S+$)/, 'Password must not contain leading or trailing whitespace')
     .required('Password is required'),
   firstName: string()
     .matches(/^[a-zA-Z]+$/, 'First name cannot contain special characters or numbers')
