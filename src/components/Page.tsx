@@ -34,5 +34,6 @@ const Page = forwardRef(({ children, title = '', ...other }: PageProps, ref: Leg
   </>
 ));
 
-export default Page;
 Page.displayName = 'Page';
+
+export default Page;
