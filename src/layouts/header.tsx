@@ -79,30 +79,30 @@ const Header = ({ headerHeight }: Props) => {
           )}
         </Stack>
       );
-    } else {
-      return (
-        <List>
-          {navConfig.map((navItem) => (
-            <ListItemButton
-              key={navItem.title}
-              component={NavLink}
-              to={navItem.path}
-              className={styles.drawerLink}
-              onClick={() => setDrawerOpen(false)}
-            >
-              <ListItemIcon>{navItem.icon}</ListItemIcon>
-              {navItem.title}
-            </ListItemButton>
-          ))}
-          <Divider />
-          {credentials && (
-            <ListItemButton onClick={onLogout} className={styles.drawerLink}>
-              Logout
-            </ListItemButton>
-          )}
-        </List>
-      );
     }
+
+    return (
+      <List>
+        {navConfig.map((navItem) => (
+          <ListItemButton
+            key={navItem.title}
+            component={NavLink}
+            to={navItem.path}
+            className={styles.drawerLink}
+            onClick={() => setDrawerOpen(false)}
+          >
+            <ListItemIcon>{navItem.icon}</ListItemIcon>
+            {navItem.title}
+          </ListItemButton>
+        ))}
+        <Divider />
+        {credentials && (
+          <ListItemButton onClick={onLogout} className={styles.drawerLink}>
+            Logout
+          </ListItemButton>
+        )}
+      </List>
+    );
   };
 
   return (

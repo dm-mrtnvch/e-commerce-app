@@ -1,8 +1,11 @@
-import { Divider, Link, Stack, Typography } from '@mui/material';
+import { Divider, Link, Stack, Typography, useTheme, useMediaQuery } from '@mui/material';
 
 const projectName = import.meta.env.VITE_PROJECT_NAME;
 
 const Footer = () => {
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+
   const authors = [
     {
       name: 'Dmitry Martynovich',
@@ -38,7 +41,11 @@ const Footer = () => {
         <Typography variant='body1' fontWeight={600}>
           Authors:
         </Typography>
-        <Stack spacing={1} direction='row' divider={<Divider orientation='vertical' flexItem />}>
+        <Stack
+          spacing={1}
+          direction={isSmallScreen ? 'column' : 'row'}
+          divider={!isSmallScreen && <Divider orientation='vertical' flexItem />}
+        >
           {authors.map((author) => (
             <Typography key={author.name}>
               <Link href={author.github} target='_blank' rel='noreferrer'>
