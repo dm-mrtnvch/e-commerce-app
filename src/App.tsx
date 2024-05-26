@@ -1,12 +1,8 @@
 import './App.css';
+import Routes from './routes';
 
 function App() {
-  return (
-    <div>
-      <h1>E-commerce Application</h1>
-      <p>Stay tuned...Soon there will be a nice application!</p>
-    </div>
-  );
+  return <Routes />;
 }
 
 export default App;
