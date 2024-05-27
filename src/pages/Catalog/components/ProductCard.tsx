@@ -20,7 +20,7 @@ const StyledCardMedia = styled(CardMedia)(({ theme }) => ({
   margin: theme.spacing(1),
   height: 254,
   borderRadius: theme.spacing(1.5),
-}));
+})) as typeof CardMedia;
 
 const StyledCardContent = styled(CardContent)(({ theme }) => ({
   padding: theme.spacing(2, 3, 3),
@@ -31,7 +31,7 @@ const ProductCard = ({ product, loading }: Props) => {
 
   useEffect(() => {
     if (product) {
-      const image = product.masterData.current.masterVariant.images[0].url;
+      const image = product?.masterData?.current?.masterVariant?.images[0]?.url;
       setImage(image);
     }
   }, [product]);
@@ -45,7 +45,7 @@ const ProductCard = ({ product, loading }: Props) => {
 
   const handleMouseLeave = () => {
     if (product) {
-      const image = product.masterData.current.masterVariant.images[0].url;
+      const image = product?.masterData?.current?.masterVariant?.images[0]?.url;
       setImage(image);
     }
   };
@@ -63,13 +63,13 @@ const ProductCard = ({ product, loading }: Props) => {
   } else if (product && !loading) {
     return (
       <StyledCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <StyledCardMedia image={image} title={product.masterData.current.name['en-US']} />
+        <StyledCardMedia component='div' image={image} title={product.masterData.current.name['en-US']} />
         <StyledCardContent>
           <Typography gutterBottom variant='subtitle1'>
-            {product.masterData.current.name['en-US']}
+            {product?.masterData?.current?.name['en-US']}
           </Typography>
           <Typography variant='h6'>
-            ${product.masterData.current.masterVariant.prices[0].value.centAmount / 100}
+            ${product?.masterData?.current?.masterVariant?.prices[0]?.value?.centAmount / 100}
           </Typography>
         </StyledCardContent>
       </StyledCard>
