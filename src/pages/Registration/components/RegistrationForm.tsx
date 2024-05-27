@@ -33,7 +33,7 @@ import { COUNTRIES_ENUM, CUSTOMER_INITIAL_VALUES } from '../constants.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { ErrorResponse } from '../../../types/common.ts';
 import { Address } from '../../../types/auth.ts';
-import { setCredentials } from '../../../redux/features/authSlice.ts';
+import { setClientCredentials } from '../../../redux/features/authSlice.ts';
 import { useAppDispatch } from '../../../hooks/reduxHooks.tsx';
 
 interface FormValues {
@@ -84,7 +84,7 @@ const RegistrationForm = () => {
               login({ username: values.email, password: values.password })
                 .unwrap()
                 .then((response) => {
-                  dispatch(setCredentials(response));
+                  dispatch(setClientCredentials(response));
                   navigate(HOME.path);
                 });
             })
