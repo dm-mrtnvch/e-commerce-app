@@ -4,6 +4,6 @@ import type { Theme } from '../types';
 
 export const MuiCardContent = {
   styleOverrides: {
-    root: { padding: '32px', '&:last-child': { paddingBottom: '32px' } },
+    root: { padding: '32px' },
   },
 } satisfies Components<Theme>['MuiCardContent'];
