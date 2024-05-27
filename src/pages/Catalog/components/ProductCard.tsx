@@ -1,4 +1,4 @@
-import { Card, CardContent, CardMedia, Skeleton, styled, Typography } from '@mui/material';
+import { Card, CardContent, CardMedia, Chip, Skeleton, styled, Typography } from '@mui/material';
 import { Product } from '../../../types/product';
 import { useEffect, useState } from 'react';
 
@@ -8,6 +8,7 @@ interface Props {
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
+  position: 'relative',
   borderRadius: theme.spacing(2),
   '&:hover': {
     cursor: 'pointer',
@@ -24,6 +25,13 @@ const StyledCardMedia = styled(CardMedia)(({ theme }) => ({
 
 const StyledCardContent = styled(CardContent)(({ theme }) => ({
   padding: theme.spacing(2, 3, 3),
+}));
+
+const StyledChip = styled(Chip)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  right: theme.spacing(2),
+  borderRadius: theme.spacing(1.25),
 }));
 
 const ProductCard = ({ product, loading }: Props) => {
@@ -61,15 +69,26 @@ const ProductCard = ({ product, loading }: Props) => {
       </StyledCard>
     );
   } else if (product && !loading) {
+    const name = product?.masterData?.current?.name['en-US'];
+    const price = product?.masterData?.current?.masterVariant?.prices[0];
+
     return (
       <StyledCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <StyledCardMedia component='div' image={image} title={product.masterData.current.name['en-US']} />
+        {price?.discounted && <StyledChip label='Sale' color='primary' />}
+        <StyledCardMedia component='div' image={image} title={name} />
         <StyledCardContent>
           <Typography gutterBottom variant='subtitle1'>
-            {product?.masterData?.current?.name['en-US']}
+            {name}
           </Typography>
-          <Typography variant='h6'>
-            ${product?.masterData?.current?.masterVariant?.prices[0]?.value?.centAmount / 100}
+          <Typography variant='h6' sx={{ display: 'flex', gap: 1 }}>
+            {price?.discounted ? (
+              <Typography component='span' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
+                ${price?.value?.centAmount / 100}
+              </Typography>
+            ) : null}
+            <Typography component='span'>
+              ${price?.discounted ? price?.discounted?.value?.centAmount / 100 : price?.value?.centAmount / 100}
+            </Typography>
           </Typography>
         </StyledCardContent>
       </StyledCard>
