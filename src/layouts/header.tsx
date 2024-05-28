@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
-import { HOME, LOGIN } from '../routes/routes';
+import { HOME, LOGIN, USER } from '../routes/routes';
 import navConfig from './config-navigation';
 import styles from './header.module.scss';
 import { resetCredentials } from '../redux/features/authSlice';
@@ -73,6 +73,15 @@ const Header = ({ headerHeight }: Props) => {
             </NavLink>
           ))}
           {credentials && (
+            <NavLink
+              key={USER.title}
+              to={USER.path}
+              className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
+            >
+              {USER.title}
+            </NavLink>
+          )}
+          {credentials && (
             <Button variant='outlined' onClick={onLogout} endIcon={<Logout />}>
               Logout
             </Button>
@@ -95,6 +104,18 @@ const Header = ({ headerHeight }: Props) => {
             {navItem.title}
           </ListItemButton>
         ))}
+        {credentials && (
+          <ListItemButton
+            key={USER.title}
+            component={NavLink}
+            to={USER.path}
+            className={styles.drawerLink}
+            onClick={() => setDrawerOpen(false)}
+          >
+            <ListItemIcon>{USER.icon}</ListItemIcon>
+            {USER.title}
+          </ListItemButton>
+        )}
         <Divider />
         {credentials && (
           <ListItemButton onClick={onLogout} className={styles.drawerLink}>

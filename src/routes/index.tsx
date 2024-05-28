@@ -13,6 +13,7 @@ const Routes = () => {
         <Route path={ROUTES.ABOUT_US.path} element={<PAGES.AboutUs />} />
         <Route path={ROUTES.CATALOG.path} element={<PAGES.Catalog />} />
         <Route path={ROUTES.CART.path} element={<PAGES.Cart />} />
+        <Route path={ROUTES.USER.path} element={<PAGES.User />} />
         <Route path={ROUTES.PAGE_404.path} element={<PAGES.Page404 />} />
         <Route path='*' element={<Navigate to='/404' replace />} />
       </Route>

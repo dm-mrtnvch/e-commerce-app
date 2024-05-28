@@ -39,6 +39,8 @@ export interface Address {
   city: string;
   postalCode: string;
   country: string;
+  id?: string;
+  state?: string;
 }
 
 export interface Customer {
@@ -61,4 +63,8 @@ export interface Customer {
   defaultBillingAddress: number | null;
   billingAddresses?: number[];
   isEmailVerified?: boolean;
+  defaultBillingAddressId?: string;
+  defaultShippingAddressId?: string;
+  shippingAddressIds?: string[];
+  billingAddressIds?: string[];
 }
