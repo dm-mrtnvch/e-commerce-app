@@ -75,19 +75,19 @@ const UserPage = () => {
                 </Box>
                 <Box sx={{ paddingLeft: 2 }}>
                   <Typography variant='body1'>
-                    <strong>Street Name:</strong> {address.streetName}
+                    <strong>Street Name:</strong> {address.streetName || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>City:</strong> {address.city}
+                    <strong>City:</strong> {address.city || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
                     <strong>State:</strong> {address.state || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>Postal Code:</strong> {address.postalCode}
+                    <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>Country:</strong> {address.country}
+                    <strong>Country:</strong> {address.country || 'not indicated'}
                   </Typography>
                 </Box>
               </CardContent>
@@ -114,19 +114,19 @@ const UserPage = () => {
                 </Box>
                 <Box sx={{ paddingLeft: 2 }}>
                   <Typography variant='body1'>
-                    <strong>Street Name:</strong> {address.streetName}
+                    <strong>Street Name:</strong> {address.streetName || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>City:</strong> {address.city}
+                    <strong>City:</strong> {address.city || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>State:</strong> {address.state}
+                    <strong>State:</strong> {address.state || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>Postal Code:</strong> {address.postalCode}
+                    <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>Country:</strong> {address.country}
+                    <strong>Country:</strong> {address.country || 'not indicated'}
                   </Typography>
                 </Box>
               </CardContent>
