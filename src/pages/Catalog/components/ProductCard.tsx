@@ -1,10 +1,10 @@
 import { Card, CardContent, CardMedia, Chip, Skeleton, styled, Typography } from '@mui/material';
-import { Product } from '../../../types/product';
 import { useEffect, useState } from 'react';
+import { ProductProjection } from '../../../types/product-projection';
 
 interface Props {
   loading?: boolean;
-  product?: Product;
+  product?: ProductProjection;
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -39,21 +39,21 @@ const ProductCard = ({ product, loading }: Props) => {
 
   useEffect(() => {
     if (product) {
-      const image = product?.masterData?.current?.masterVariant?.images[0]?.url;
+      const image = product?.masterVariant?.images?.[0]?.url;
       setImage(image);
     }
   }, [product]);
 
   const handleMouseEnter = () => {
-    if (product && product.masterData.current.masterVariant.images[1]) {
-      const image = product.masterData.current.masterVariant.images[1].url;
+    if (product && product?.masterVariant.images?.[1]) {
+      const image = product?.masterVariant.images?.[1].url;
       setImage(image);
     }
   };
 
   const handleMouseLeave = () => {
     if (product) {
-      const image = product?.masterData?.current?.masterVariant?.images[0]?.url;
+      const image = product?.masterVariant?.images?.[0]?.url;
       setImage(image);
     }
   };
@@ -69,8 +69,8 @@ const ProductCard = ({ product, loading }: Props) => {
       </StyledCard>
     );
   } else if (product && !loading) {
-    const name = product?.masterData?.current?.name['en-US'];
-    const price = product?.masterData?.current?.masterVariant?.prices[0];
+    const name = product?.name['en-US'];
+    const price = product?.masterVariant?.prices?.[0];
 
     return (
       <StyledCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
@@ -87,7 +87,7 @@ const ProductCard = ({ product, loading }: Props) => {
               </Typography>
             ) : null}
             <Typography component='span'>
-              ${price?.discounted ? price?.discounted?.value?.centAmount / 100 : price?.value?.centAmount / 100}
+              ${price?.discounted ? price?.discounted?.value?.centAmount / 100 : price?.value?.centAmount ?? 0 / 100}
             </Typography>
           </Typography>
         </StyledCardContent>
