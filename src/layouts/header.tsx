@@ -16,13 +16,13 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
+import { resetClientCredentials } from '../redux/features/authSlice';
 import { HOME, LOGIN } from '../routes/routes';
 import navConfig from './config-navigation';
 import styles from './header.module.scss';
-import { resetCredentials } from '../redux/features/authSlice';
-import { useState } from 'react';
 
 interface Props {
   headerHeight: number;
@@ -37,10 +37,10 @@ const Header = ({ headerHeight }: Props) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-  const { credentials } = useAppSelector((state) => state.auth);
+  const { clientCredentials } = useAppSelector((state) => state.auth);
 
   const onLogout = () => {
-    dispatch(resetCredentials());
+    dispatch(resetClientCredentials());
     navigate(LOGIN.path, { replace: true });
   };
 
@@ -72,7 +72,7 @@ const Header = ({ headerHeight }: Props) => {
               {navItem.title}
             </NavLink>
           ))}
-          {credentials && (
+          {clientCredentials && (
             <Button variant='outlined' onClick={onLogout} endIcon={<Logout />}>
               Logout
             </Button>
@@ -96,7 +96,7 @@ const Header = ({ headerHeight }: Props) => {
           </ListItemButton>
         ))}
         <Divider />
-        {credentials && (
+        {clientCredentials && (
           <ListItemButton onClick={onLogout} className={styles.drawerLink}>
             Logout
           </ListItemButton>
