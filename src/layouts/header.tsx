@@ -1,8 +1,9 @@
-import { Logout, Menu } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
+import { Logout, Menu as MenuIcon, Person2 } from '@mui/icons-material';
 import {
   AppBar,
+  Avatar,
   Box,
-  Button,
   Chip,
   Divider,
   Drawer,
@@ -10,6 +11,8 @@ import {
   List,
   ListItemButton,
   ListItemIcon,
+  Menu,
+  MenuItem,
   Stack,
   Toolbar,
   Typography,
@@ -22,7 +25,6 @@ import { HOME, LOGIN, USER } from '../routes/routes';
 import navConfig from './config-navigation';
 import styles from './header.module.scss';
 import { resetCredentials } from '../redux/features/authSlice';
-import { useState } from 'react';
 
 interface Props {
   headerHeight: number;
@@ -37,11 +39,29 @@ const Header = ({ headerHeight }: Props) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(anchorEl);
+
   const { credentials } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!mdUp) {
+        handleMenuClose();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mdUp]);
 
   const onLogout = () => {
     dispatch(resetCredentials());
     navigate(LOGIN.path, { replace: true });
+    handleMenuClose();
   };
 
   const toggleDrawer = () => {
@@ -59,6 +79,14 @@ const Header = ({ headerHeight }: Props) => {
     </Stack>
   );
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const renderNavLinks = (type: 'nav' | 'drawer') => {
     if (type === 'nav') {
       return (
@@ -73,18 +101,34 @@ const Header = ({ headerHeight }: Props) => {
             </NavLink>
           ))}
           {credentials && (
-            <NavLink
-              key={USER.title}
-              to={USER.path}
-              className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
-            >
-              {USER.title}
-            </NavLink>
-          )}
-          {credentials && (
-            <Button variant='outlined' onClick={onLogout} endIcon={<Logout />}>
-              Logout
-            </Button>
+            <>
+              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+                <Avatar />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={isMenuOpen}
+                onClose={handleMenuClose}
+                sx={{ mt: '45px' }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={NavLink} to={USER.path} onClick={handleMenuClose}>
+                  <Person2 fontSize='small' sx={{ mr: 1 }} />
+                  User Profile
+                </MenuItem>
+                <MenuItem onClick={onLogout}>
+                  <Logout fontSize='small' sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
           )}
         </Stack>
       );
@@ -148,7 +192,7 @@ const Header = ({ headerHeight }: Props) => {
           renderNavLinks('nav')
         ) : (
           <IconButton onClick={toggleDrawer}>
-            <Menu />
+            <MenuIcon />
           </IconButton>
         )}
 
