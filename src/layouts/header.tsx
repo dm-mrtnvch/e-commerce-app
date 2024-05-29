@@ -21,10 +21,10 @@ import {
 } from '@mui/material';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
+import { resetClientCredentials } from '../redux/features/authSlice';
 import { HOME, LOGIN, USER } from '../routes/routes';
 import navConfig from './config-navigation';
 import styles from './header.module.scss';
-import { resetCredentials } from '../redux/features/authSlice';
 
 interface Props {
   headerHeight: number;
@@ -37,12 +37,14 @@ const Header = ({ headerHeight }: Props) => {
   const mdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   const navigate = useNavigate();
+
   const dispatch = useAppDispatch();
+
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
 
-  const { credentials } = useAppSelector((state) => state.auth);
+  const { clientCredentials } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     const handleResize = () => {
@@ -59,7 +61,7 @@ const Header = ({ headerHeight }: Props) => {
   }, [mdUp]);
 
   const onLogout = () => {
-    dispatch(resetCredentials());
+    dispatch(resetClientCredentials());
     navigate(LOGIN.path, { replace: true });
     handleMenuClose();
   };
@@ -100,7 +102,7 @@ const Header = ({ headerHeight }: Props) => {
               {navItem.title}
             </NavLink>
           ))}
-          {credentials && (
+          {clientCredentials && (
             <>
               <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
                 <Avatar />
@@ -148,7 +150,7 @@ const Header = ({ headerHeight }: Props) => {
             {navItem.title}
           </ListItemButton>
         ))}
-        {credentials && (
+        {clientCredentials && (
           <ListItemButton
             key={USER.title}
             component={NavLink}
@@ -161,7 +163,7 @@ const Header = ({ headerHeight }: Props) => {
           </ListItemButton>
         )}
         <Divider />
-        {credentials && (
+        {clientCredentials && (
           <ListItemButton onClick={onLogout} className={styles.drawerLink}>
             Logout
           </ListItemButton>

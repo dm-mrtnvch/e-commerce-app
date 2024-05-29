@@ -1,58 +1,58 @@
+import { CategoryOrderHints, CategoryReference } from './category';
 import { LocalizedString } from './common';
+import { ProductTypeReference } from './product-type';
+import { ReviewRatingStatistics } from './review';
+import { StateReference } from './state';
+import { TaxCategoryReference } from './tax-category';
 
 export interface Product {
-  id: string;
-  version: number;
-  key: string;
   createdAt: string;
-  lastModifiedAt: string;
-  productType: ProductTypeReference;
-  masterData: ProductCatalogData;
-}
-
-export interface ProductTypeReference {
   id: string;
-  typeId: string;
+  key?: string;
+  lastModifiedAt: string;
+  masterData: ProductCatalogData;
+  priceMode?: string;
+  productType: ProductTypeReference;
+  reviewRatingStatistics?: ReviewRatingStatistics;
+  state?: StateReference;
+  taxCategory?: TaxCategoryReference;
+  version: number;
 }
 
 export interface ProductCatalogData {
-  published: boolean;
   current: ProductData;
-  staged: ProductData;
   hasStagedChanges: boolean;
+  published: boolean;
+  staged: ProductData;
 }
 
 export interface ProductData {
-  name: LocalizedString;
   categories: CategoryReference[];
-  categoryOrderHints: Record<string, string[]>;
-  description: LocalizedString;
-  slug: LocalizedString;
-  metaTitle: LocalizedString;
-  metaDescription: LocalizedString;
-  metaKeywords: LocalizedString;
+  categoryOrderHints?: CategoryOrderHints;
+  description?: LocalizedString;
   masterVariant: ProductVariant;
+  metaDescription?: LocalizedString;
+  metaKeywords?: LocalizedString;
+  metaTitle?: LocalizedString;
+  name: LocalizedString;
+  searchKeywords: SearchKeywords;
+  slug: LocalizedString;
   variants: ProductVariant[];
 }
 
-export interface CategoryReference {
-  typeId: string;
-  id: string;
-}
-
 export interface ProductVariant {
+  assets?: Asset[];
+  attributes?: Attribute[];
+  availability?: ProductVariantAvailability;
   id: number;
-  key: string;
-  sku: string;
-  prices: Price[];
-  attributes: Attribute[];
-  price: Price;
-  images: Image[];
-  assets: Asset[];
-  availability: ProductVariantAvailability;
-  isMatchingVariant: boolean;
-  scopedPrice: ScopedPrice;
-  scopedPriceDiscounted: boolean;
+  images?: Image[];
+  isMatchingVariant?: boolean;
+  key?: string;
+  price?: Price;
+  prices?: Price[];
+  scopedPrice?: ScopedPrice;
+  scopedPriceDiscounted?: boolean;
+  sku?: string;
 }
 
 export interface Price {
@@ -144,4 +144,24 @@ export interface ScopedPrice {
   validFrom: string;
   validUntil: string;
   discounted: DiscountedPrice;
+}
+
+export interface SearchKeywords {
+  [key: string]: SearchKeyword[];
+}
+
+export interface SearchKeyword {
+  suggestTokenizer?: SuggestTokenizer;
+  text: string;
+}
+
+export type SuggestTokenizer = CustomTokenizer | WhitespaceTokenizer;
+
+export interface CustomTokenizer {
+  inputs: string[];
+  type: 'custom';
+}
+
+export interface WhitespaceTokenizer {
+  type: 'whitespace';
 }
