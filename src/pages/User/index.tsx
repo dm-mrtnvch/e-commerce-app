@@ -2,18 +2,19 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/reduxHooks.tsx';
 import { useGetUserProfileQuery } from '../../redux/services/me.ts';
-import { Box, Card, CardContent, Chip, Container, Grid, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, CircularProgress, Container, Grid, Typography } from '@mui/material';
 import { Address } from '../../types/auth.ts';
 import { HOME } from '../../routes/routes.tsx';
 
 const UserPage = () => {
   const navigate = useNavigate();
+
   const { clientCredentials } = useAppSelector((state) => state.auth);
 
-  const { data: userProfile } = useGetUserProfileQuery();
+  const { data: userProfile, isLoading } = useGetUserProfileQuery();
 
   useEffect(() => {
-    if (clientCredentials && !('refresh_token' in clientCredentials)) {
+    if (!clientCredentials?.access_token) {
       navigate(HOME.path, { replace: true });
     }
   }, [clientCredentials, navigate]);
@@ -24,6 +25,14 @@ const UserPage = () => {
   const billingAddresses = userProfile?.addresses.filter((address) =>
     userProfile?.billingAddressIds?.includes(address.id as string),
   );
+
+  if (isLoading) {
+    return (
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth='md' sx={{ padding: 2 }}>
@@ -56,7 +65,7 @@ const UserPage = () => {
               }}
             >
               <CardContent>
-                <Box display='flex' alignItems='center' justifyContent='space-between'>
+                <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
                   <Typography variant='h6' component='div' gutterBottom>
                     Shipping Address {index + 1}
                   </Typography>
@@ -72,7 +81,7 @@ const UserPage = () => {
                     <strong>City:</strong> {address.city}
                   </Typography>
                   <Typography variant='body1'>
-                    <strong>State:</strong> {address.state}
+                    <strong>State:</strong> {address.state || 'not indicated'}
                   </Typography>
                   <Typography variant='body1'>
                     <strong>Postal Code:</strong> {address.postalCode}
