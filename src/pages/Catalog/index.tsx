@@ -1,5 +1,5 @@
-import { Container, Grid, Pagination } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
+import { Container, Grid, Pagination, Stack } from '@mui/material';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { Page } from '../../components';
 import { useGetProductProjectionsSearchQuery } from '../../redux/services/product-projections';
 import { CATALOG } from '../../routes/routes';
@@ -8,6 +8,7 @@ import Filter from './components/Filter';
 import ProductCard from './components/ProductCard';
 import Sort from './components/Sort';
 import { Option } from '../../types/common';
+import Search from './components/Search';
 
 const sortOptions = [
   {
@@ -31,9 +32,14 @@ const sortOptions = [
 const Catalog = () => {
   const [page, setPage] = useState<number>(1);
   const [activeSortType, setActiveSortType] = useState<Option>(sortOptions[0]);
+  const [searchText, setSearchText] = useState<string>('');
 
   const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
   const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: AttributePlainEnumValue[] }>({});
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedProductTypes, selectedAttributes, searchText, activeSortType]);
 
   let filter = '';
   if (selectedProductTypes.length > 0) {
@@ -51,10 +57,11 @@ const Catalog = () => {
     filter += filter ? `&filter=${attributes}` : attributes;
   }
 
-  const { data, isLoading } = useGetProductProjectionsSearchQuery({
+  const { data, isLoading, isFetching } = useGetProductProjectionsSearchQuery({
     offset: (page - 1) * 20,
     filter: filter ? filter : undefined,
     sort: activeSortType.value,
+    search: searchText,
   });
 
   const handlePageChange = (_event: ChangeEvent<unknown>, value: number) => {
@@ -65,21 +72,25 @@ const Catalog = () => {
     <Page title={CATALOG.title}>
       <Container sx={{ py: 1 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-            <Sort activeSortType={activeSortType} setActiveSortType={setActiveSortType} options={sortOptions} />
-            <Filter
-              selectedAttributes={selectedAttributes}
-              setSelectedAttributes={setSelectedAttributes}
-              selectedProductTypes={selectedProductTypes}
-              setSelectedProductTypes={setSelectedProductTypes}
-            />
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+            <Search searchText={searchText} setSearchText={setSearchText} />
+
+            <Stack direction='row' gap={1}>
+              <Sort activeSortType={activeSortType} setActiveSortType={setActiveSortType} options={sortOptions} />
+              <Filter
+                selectedAttributes={selectedAttributes}
+                setSelectedAttributes={setSelectedAttributes}
+                selectedProductTypes={selectedProductTypes}
+                setSelectedProductTypes={setSelectedProductTypes}
+              />
+            </Stack>
           </Grid>
           {data?.results?.map((product) => (
             <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
               <ProductCard product={product} />
             </Grid>
           ))}
-          {isLoading &&
+          {(isLoading || isFetching) &&
             Array.from({ length: 12 }).map((_, index) => (
               <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
                 <ProductCard loading />

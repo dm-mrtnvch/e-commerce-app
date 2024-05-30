@@ -23,6 +23,7 @@ export interface Params {
   offset?: number;
   filter?: string;
   sort?: string;
+  search?: string;
 }
 
 export interface Option {
