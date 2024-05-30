@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../store';
 import { Customer } from '../../types/auth.ts';
+import { ChangeUserInfo } from '../../types/me.ts';
 
 const API_BASE_URL = import.meta.env.VITE_HOST;
 const PROJECT_KEY = import.meta.env.VITE_PROJECT_KEY;
@@ -25,7 +26,14 @@ export const meApi = createApi({
         method: 'GET',
       }),
     }),
+    updateUserProfile: builder.mutation<Customer, { id: string; version: number; actions: ChangeUserInfo[] }>({
+      query: ({ id, version, actions }) => ({
+        url: `/customers/${id}`,
+        method: 'POST',
+        body: { version, actions },
+      }),
+    }),
   }),
 });
 
-export const { useGetUserProfileQuery } = meApi;
+export const { useGetUserProfileQuery, useUpdateUserProfileMutation } = meApi;
