@@ -33,7 +33,17 @@ export const meApi = createApi({
         body: { version, actions },
       }),
     }),
+    changePassword: builder.mutation<
+      void,
+      { id: string; version: number; currentPassword: string; newPassword: string }
+    >({
+      query: ({ id, version, currentPassword, newPassword }) => ({
+        url: `/customers/password`,
+        method: 'POST',
+        body: { id, version, currentPassword, newPassword },
+      }),
+    }),
   }),
 });
 
-export const { useGetUserProfileQuery, useUpdateUserProfileMutation } = meApi;
+export const { useGetUserProfileQuery, useUpdateUserProfileMutation, useChangePasswordMutation } = meApi;

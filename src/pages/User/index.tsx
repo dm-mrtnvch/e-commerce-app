@@ -13,12 +13,19 @@ import {
   CircularProgress,
   Container,
   Grid,
+  IconButton,
+  InputAdornment,
   Snackbar,
   Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import { useGetUserProfileQuery, useUpdateUserProfileMutation } from '../../redux/services/me.ts';
-import { editProfileSchema } from '../../helpers/validationHelper.ts';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import {
+  useChangePasswordMutation,
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+} from '../../redux/services/me.ts';
+import { changePasswordSchema, editProfileSchema } from '../../helpers/validationHelper.ts';
 import { Address } from '../../types/auth.ts';
 import { ErrorResponse } from '../../types/common.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
@@ -30,17 +37,28 @@ interface FormValues {
   dateOfBirth: string;
 }
 
+interface PasswordFormValues {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
 const UserPage = () => {
   const navigate = useNavigate();
 
   const { clientCredentials } = useAppSelector((state) => state.auth);
 
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isPasswordMode, setIsPasswordMode] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
   const [isErrorSnackbar, setIsErrorSnackbar] = useState<boolean>(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const { data: userProfile, isLoading, refetch, isError, error } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
+  const [changePassword] = useChangePasswordMutation();
 
   useEffect(() => {
     if (!clientCredentials?.access_token) {
@@ -114,6 +132,30 @@ const UserPage = () => {
       setOpen(true);
     } catch (error) {
       setIsErrorSnackbar(true);
+      setOpen(true);
+    }
+  };
+
+  const handleChangePassword = async (values: PasswordFormValues) => {
+    try {
+      if (!userProfile?.id || !userProfile?.version) {
+        setOpen(true);
+        return;
+      }
+
+      await changePassword({
+        id: userProfile.id,
+        version: userProfile.version,
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      }).unwrap();
+
+      setIsPasswordMode(false);
+      setOpen(true);
+
+      // me request failing
+      refetch();
+    } catch (error) {
       setOpen(true);
     }
   };
@@ -243,6 +285,121 @@ const UserPage = () => {
                   </Form>
                 )}
               </Formik>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Box display='flex' justifyContent='space-between' alignItems='center' gap={2} mb={3}>
+                <Typography variant='h5' component='div' gutterBottom>
+                  Change Password
+                </Typography>
+                <Button variant='outlined' onClick={() => setIsPasswordMode(!isPasswordMode)}>
+                  {isPasswordMode ? 'Cancel' : 'Change Password'}
+                </Button>
+              </Box>
+              {isPasswordMode && (
+                <Formik
+                  initialValues={{
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmNewPassword: '',
+                  }}
+                  validationSchema={changePasswordSchema}
+                  onSubmit={handleChangePassword}
+                >
+                  {({ values, handleChange, handleBlur, errors, touched, isSubmitting, dirty }) => (
+                    <Form>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          width: {
+                            sm: '100%',
+                            md: '60%',
+                          },
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          name='currentPassword'
+                          label='Current Password'
+                          type={showCurrentPassword ? 'text' : 'password'}
+                          value={values.currentPassword}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.currentPassword && Boolean(errors.currentPassword)}
+                          helperText={touched.currentPassword && errors.currentPassword}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge='end'>
+                                  {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          name='newPassword'
+                          label='New Password'
+                          type={showNewPassword ? 'text' : 'password'}
+                          value={values.newPassword}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.newPassword && Boolean(errors.newPassword)}
+                          helperText={touched.newPassword && errors.newPassword}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge='end'>
+                                  {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          name='confirmNewPassword'
+                          label='Confirm New Password'
+                          type={showConfirmNewPassword ? 'text' : 'password'}
+                          value={values.confirmNewPassword}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.confirmNewPassword && Boolean(errors.confirmNewPassword)}
+                          helperText={touched.confirmNewPassword && errors.confirmNewPassword}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position='end'>
+                                <IconButton
+                                  onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                                  edge='end'
+                                >
+                                  {showConfirmNewPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          variant='contained'
+                          color='primary'
+                          type='submit'
+                          sx={{ mt: 2 }}
+                          disabled={!dirty || isSubmitting}
+                        >
+                          Save Password
+                        </Button>
+                      </Box>
+                    </Form>
+                  )}
+                </Formik>
+              )}
             </CardContent>
           </Card>
         </Grid>
