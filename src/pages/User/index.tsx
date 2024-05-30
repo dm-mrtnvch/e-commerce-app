@@ -37,8 +37,9 @@ const UserPage = () => {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
+  const [isErrorSnackbar, setIsErrorSnackbar] = useState<boolean>(false);
 
-  const { data: userProfile, isLoading, refetch, isSuccess, isError, error } = useGetUserProfileQuery();
+  const { data: userProfile, isLoading, refetch, isError, error } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
 
   useEffect(() => {
@@ -95,20 +96,24 @@ const UserPage = () => {
         } as const);
       }
 
-      if (userProfile?.id && userProfile?.version) {
-        await updateUserProfile({
-          id: userProfile.id,
-          version: userProfile.version,
-          actions: updateActions,
-        }).unwrap();
-
-        refetch();
-        setIsEditMode(false);
+      if (!userProfile?.id || !userProfile?.version) {
+        setIsErrorSnackbar(true);
         setOpen(true);
-      } else {
-        throw new Error('User profile ID or version is undefined');
+        return;
       }
+
+      await updateUserProfile({
+        id: userProfile.id,
+        version: userProfile.version,
+        actions: updateActions,
+      }).unwrap();
+
+      refetch();
+      setIsEditMode(false);
+      setIsErrorSnackbar(false);
+      setOpen(true);
     } catch (error) {
+      setIsErrorSnackbar(true);
       setOpen(true);
     }
   };
@@ -218,21 +223,20 @@ const UserPage = () => {
                         </Button>
                       )}
                     </Box>
-
                     <Snackbar
                       open={open}
                       autoHideDuration={4000}
                       onClose={handleClose}
                       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     >
-                      {isSuccess ? (
-                        <Alert onClose={handleClose} severity='success' variant='filled'>
-                          User profile info successful. All data has been saved!
-                        </Alert>
-                      ) : (
+                      {isErrorSnackbar ? (
                         <Alert onClose={handleClose} severity='error' variant='filled'>
                           {(isError && ((error as FetchBaseQueryError)?.data as ErrorResponse)?.message) ||
-                            'User profile change failed. Please try again later.'}
+                            'User profile change failed. Please try again.'}
+                        </Alert>
+                      ) : (
+                        <Alert onClose={handleClose} severity='success' variant='filled'>
+                          User profile info successful. All data will be saved.
                         </Alert>
                       )}
                     </Snackbar>
