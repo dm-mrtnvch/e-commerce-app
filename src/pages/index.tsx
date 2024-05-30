@@ -6,3 +6,4 @@ export { default as AboutUs } from './AboutUs';
 export { default as Cart } from './Cart';
 export { default as Catalog } from './Catalog';
 export { default as User } from './User';
+export { default as DetailedProduct } from './DetailedProduct';
