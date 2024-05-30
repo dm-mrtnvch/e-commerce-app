@@ -1,8 +1,9 @@
-import { Logout, Menu } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
+import { Logout, Menu as MenuIcon, Person2 } from '@mui/icons-material';
 import {
   AppBar,
+  Avatar,
   Box,
-  Button,
   Chip,
   Divider,
   Drawer,
@@ -10,17 +11,18 @@ import {
   List,
   ListItemButton,
   ListItemIcon,
+  Menu,
+  MenuItem,
   Stack,
   Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { resetClientCredentials } from '../redux/features/authSlice';
-import { HOME, LOGIN } from '../routes/routes';
+import { HOME, LOGIN, USER } from '../routes/routes';
 import navConfig from './config-navigation';
 import styles from './header.module.scss';
 
@@ -35,13 +37,33 @@ const Header = ({ headerHeight }: Props) => {
   const mdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   const navigate = useNavigate();
+
   const dispatch = useAppDispatch();
+
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(anchorEl);
+
   const { clientCredentials } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!mdUp) {
+        handleMenuClose();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mdUp]);
 
   const onLogout = () => {
     dispatch(resetClientCredentials());
     navigate(LOGIN.path, { replace: true });
+    handleMenuClose();
   };
 
   const toggleDrawer = () => {
@@ -59,6 +81,14 @@ const Header = ({ headerHeight }: Props) => {
     </Stack>
   );
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const renderNavLinks = (type: 'nav' | 'drawer') => {
     if (type === 'nav') {
       return (
@@ -73,9 +103,34 @@ const Header = ({ headerHeight }: Props) => {
             </NavLink>
           ))}
           {clientCredentials && (
-            <Button variant='outlined' onClick={onLogout} endIcon={<Logout />}>
-              Logout
-            </Button>
+            <>
+              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
+                <Avatar />
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={isMenuOpen}
+                onClose={handleMenuClose}
+                sx={{ mt: '45px' }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={NavLink} to={USER.path} onClick={handleMenuClose}>
+                  <Person2 fontSize='small' sx={{ mr: 1 }} />
+                  User Profile
+                </MenuItem>
+                <MenuItem onClick={onLogout}>
+                  <Logout fontSize='small' sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
           )}
         </Stack>
       );
@@ -95,6 +150,18 @@ const Header = ({ headerHeight }: Props) => {
             {navItem.title}
           </ListItemButton>
         ))}
+        {clientCredentials && (
+          <ListItemButton
+            key={USER.title}
+            component={NavLink}
+            to={USER.path}
+            className={styles.drawerLink}
+            onClick={() => setDrawerOpen(false)}
+          >
+            <ListItemIcon>{USER.icon}</ListItemIcon>
+            {USER.title}
+          </ListItemButton>
+        )}
         <Divider />
         {clientCredentials && (
           <ListItemButton onClick={onLogout} className={styles.drawerLink}>
@@ -127,7 +194,7 @@ const Header = ({ headerHeight }: Props) => {
           renderNavLinks('nav')
         ) : (
           <IconButton onClick={toggleDrawer}>
-            <Menu />
+            <MenuIcon />
           </IconButton>
         )}
 
