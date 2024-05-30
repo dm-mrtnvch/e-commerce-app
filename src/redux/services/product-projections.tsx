@@ -27,10 +27,10 @@ export const productProjectionsApi = createApi({
       }),
     }),
     getProductProjectionsSearch: builder.query<Pagination<ProductProjection>, Params>({
-      query: ({ offset, filter, sort }) => ({
+      query: ({ offset, filter, sort, search }) => ({
         url: `/product-projections/search${filter ? `?filter=${filter}` : ''}`,
         method: 'GET',
-        params: { offset, sort },
+        params: { offset, sort, ['text.en-US']: search, fuzzy: true },
       }),
     }),
   }),
