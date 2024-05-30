@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Pagination } from '../../types/common';
+import { Pagination, Params } from '../../types/common';
 import { ProductProjection } from '../../types/product-projection';
 import { RootState } from '../store';
 
@@ -26,11 +26,11 @@ export const productProjectionsApi = createApi({
         method: 'GET',
       }),
     }),
-    getProductProjectionsSearch: builder.query<Pagination<ProductProjection>, { offset: number; filter?: string }>({
-      query: ({ offset, filter }) => ({
+    getProductProjectionsSearch: builder.query<Pagination<ProductProjection>, Params>({
+      query: ({ offset, filter, sort }) => ({
         url: `/product-projections/search${filter ? `?filter=${filter}` : ''}`,
         method: 'GET',
-        params: { offset },
+        params: { offset, sort },
       }),
     }),
   }),
