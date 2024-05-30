@@ -18,3 +18,14 @@ export interface Pagination<T> {
 export interface LocalizedString {
   [key: string]: string;
 }
+
+export interface Params {
+  offset?: number;
+  filter?: string;
+  sort?: string;
+}
+
+export interface Option {
+  label: string;
+  value: string;
+}
