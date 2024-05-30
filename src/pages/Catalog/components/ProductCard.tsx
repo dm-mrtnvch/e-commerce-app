@@ -1,5 +1,6 @@
 import { Card, CardContent, CardMedia, Chip, Skeleton, styled, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductProjection } from '../../../types/product-projection';
 
 interface Props {
@@ -36,6 +37,7 @@ const StyledChip = styled(Chip)(({ theme }) => ({
 }));
 
 const ProductCard = ({ product, loading }: Props) => {
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -59,6 +61,12 @@ const ProductCard = ({ product, loading }: Props) => {
     }
   };
 
+  const handleClick = () => {
+    if (product) {
+      navigate(product.key ?? '');
+    }
+  };
+
   if (!product && loading) {
     return (
       <StyledCard>
@@ -74,7 +82,7 @@ const ProductCard = ({ product, loading }: Props) => {
     const price = product?.masterVariant?.prices?.[0];
 
     return (
-      <StyledCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <StyledCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleClick}>
         {price?.discounted && <StyledChip label='Sale' color='primary' />}
         <StyledCardMedia component='div' image={image} title={name} />
         <StyledCardContent>
