@@ -10,6 +10,7 @@ interface Props {
 const StyledCard = styled(Card)(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.spacing(2),
+  height: '100%',
   '&:hover': {
     cursor: 'pointer',
     boxShadow: theme.shadows[4],
