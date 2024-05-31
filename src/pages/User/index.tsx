@@ -27,7 +27,6 @@ import {
 } from '../../redux/services/me.ts';
 import { changePasswordSchema, editProfileSchema } from '../../helpers/validationHelper.ts';
 import { Address } from '../../types/auth.ts';
-import { ErrorResponse } from '../../types/common.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
 interface FormValues {
@@ -43,6 +42,10 @@ interface PasswordFormValues {
   confirmNewPassword: string;
 }
 
+interface ErrorResponse {
+  message?: string;
+}
+
 const UserPage = () => {
   const navigate = useNavigate();
 
@@ -50,13 +53,17 @@ const UserPage = () => {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordMode, setIsPasswordMode] = useState(false);
-  const [open, setOpen] = useState<boolean>(false);
-  const [isErrorSnackbar, setIsErrorSnackbar] = useState<boolean>(false);
+  const [openUserSnackbar, setOpenUserSnackbar] = useState<boolean>(false);
+  const [isUserSnackbarError, setIsUserSnackbarError] = useState<boolean>(false);
+  const [userSnackbarMessage, setUserSnackbarMessage] = useState<string>('');
+  const [openPasswordSnackbar, setOpenPasswordSnackbar] = useState<boolean>(false);
+  const [isPasswordSnackbarError, setIsPasswordSnackbarError] = useState<boolean>(false);
+  const [passwordSnackbarMessage, setPasswordSnackbarMessage] = useState<string>('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
-  const { data: userProfile, isLoading, refetch, isError, error } = useGetUserProfileQuery();
+  const { data: userProfile, isLoading, refetch } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
   const [changePassword] = useChangePasswordMutation();
 
@@ -73,12 +80,18 @@ const UserPage = () => {
     userProfile?.billingAddressIds?.includes(address.id as string),
   );
 
-  const handleClose = (_event?: SyntheticEvent | Event, reason?: string) => {
+  const handleCloseUserSnackbar = (_event?: SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
+    setOpenUserSnackbar(false);
+  };
 
-    setOpen(false);
+  const handleClosePasswordSnackbar = (_event?: SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenPasswordSnackbar(false);
   };
 
   const handleEditToggle = () => {
@@ -115,8 +128,9 @@ const UserPage = () => {
       }
 
       if (!userProfile?.id || !userProfile?.version) {
-        setIsErrorSnackbar(true);
-        setOpen(true);
+        setIsUserSnackbarError(true);
+        setUserSnackbarMessage('User profile ID or version is undefined');
+        setOpenUserSnackbar(true);
         return;
       }
 
@@ -126,20 +140,27 @@ const UserPage = () => {
         actions: updateActions,
       }).unwrap();
 
-      refetch();
       setIsEditMode(false);
-      setIsErrorSnackbar(false);
-      setOpen(true);
+      setIsUserSnackbarError(false);
+      setUserSnackbarMessage('User profile updated successfully');
+      setOpenUserSnackbar(true);
+      refetch();
     } catch (error) {
-      setIsErrorSnackbar(true);
-      setOpen(true);
+      const fetchError = error as FetchBaseQueryError;
+      const errorResponse = fetchError.data as ErrorResponse;
+
+      setIsUserSnackbarError(true);
+      setUserSnackbarMessage(errorResponse?.message || 'Failed to update user profile');
+      setOpenUserSnackbar(true);
     }
   };
 
   const handleChangePassword = async (values: PasswordFormValues) => {
     try {
       if (!userProfile?.id || !userProfile?.version) {
-        setOpen(true);
+        setIsPasswordSnackbarError(true);
+        setPasswordSnackbarMessage('User profile ID or version is undefined');
+        setOpenPasswordSnackbar(true);
         return;
       }
 
@@ -151,12 +172,23 @@ const UserPage = () => {
       }).unwrap();
 
       setIsPasswordMode(false);
-      setOpen(true);
-
-      // me request failing
+      setIsPasswordSnackbarError(false);
+      setPasswordSnackbarMessage('Password changed successfully');
+      setOpenPasswordSnackbar(true);
       refetch();
     } catch (error) {
-      setOpen(true);
+      const fetchError = error as FetchBaseQueryError;
+      const errorResponse = fetchError.data as ErrorResponse;
+
+      setIsPasswordSnackbarError(true);
+      if (fetchError.status === 401) {
+        setPasswordSnackbarMessage(errorResponse?.message || 'Unauthorized. Please log in again.');
+      } else if (fetchError.status === 400) {
+        setPasswordSnackbarMessage(errorResponse?.message || 'Bad request. Please check your inputs.');
+      } else {
+        setPasswordSnackbarMessage(errorResponse?.message || 'Failed to change password');
+      }
+      setOpenPasswordSnackbar(true);
     }
   };
 
@@ -266,19 +298,18 @@ const UserPage = () => {
                       )}
                     </Box>
                     <Snackbar
-                      open={open}
+                      open={openUserSnackbar}
                       autoHideDuration={4000}
-                      onClose={handleClose}
+                      onClose={handleCloseUserSnackbar}
                       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     >
-                      {isErrorSnackbar ? (
-                        <Alert onClose={handleClose} severity='error' variant='filled'>
-                          {(isError && ((error as FetchBaseQueryError)?.data as ErrorResponse)?.message) ||
-                            'User profile change failed. Please try again.'}
+                      {isUserSnackbarError ? (
+                        <Alert onClose={handleCloseUserSnackbar} severity='error' variant='filled'>
+                          {userSnackbarMessage}
                         </Alert>
                       ) : (
-                        <Alert onClose={handleClose} severity='success' variant='filled'>
-                          User profile info successful. All data will be saved.
+                        <Alert onClose={handleCloseUserSnackbar} severity='success' variant='filled'>
+                          User profile updated successfully.
                         </Alert>
                       )}
                     </Snackbar>
@@ -400,6 +431,22 @@ const UserPage = () => {
                   )}
                 </Formik>
               )}
+              <Snackbar
+                open={openPasswordSnackbar}
+                autoHideDuration={4000}
+                onClose={handleClosePasswordSnackbar}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                {isPasswordSnackbarError ? (
+                  <Alert onClose={handleClosePasswordSnackbar} severity='error' variant='filled'>
+                    {passwordSnackbarMessage}
+                  </Alert>
+                ) : (
+                  <Alert onClose={handleClosePasswordSnackbar} severity='success' variant='filled'>
+                    Password changed successfully.
+                  </Alert>
+                )}
+              </Snackbar>
             </CardContent>
           </Card>
         </Grid>
