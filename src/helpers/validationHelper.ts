@@ -43,7 +43,10 @@ const addressSchema = object().shape({
 });
 
 export const registrationFormValidationSchema = object().shape({
-  email: string().email('Invalid email address').required('Email is required'),
+  email: string()
+    .email('Enter a valid email')
+    .matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{1,}$/i, 'Enter a valid email')
+    .required('Email is required'),
   password: string()
     .min(8, 'Password should be of minimum 8 characters length')
     .matches(/^(?=.*[a-z])/, 'Password must contain at least one lowercase letter (a-z)')
@@ -73,4 +76,20 @@ export const registrationFormValidationSchema = object().shape({
         country: string().notRequired(),
       }),
   }),
+});
+
+export const editProfileSchema = object().shape({
+  firstName: string()
+    .matches(/^[a-zA-Z]+$/, 'First name cannot contain special characters or numbers')
+    .required('First name is required'),
+  lastName: string()
+    .matches(/^[a-zA-Z]+$/, 'Last name cannot contain special characters or numbers')
+    .required('Last name is required'),
+  dateOfBirth: date()
+    .max(new Date(new Date().setFullYear(new Date().getFullYear() - 13)), 'You must be at least 13 years old')
+    .required('Date of birth is required'),
+  email: string()
+    .email('Enter a valid email')
+    .matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{1,}$/i, 'Enter a valid email')
+    .required('Email is required'),
 });

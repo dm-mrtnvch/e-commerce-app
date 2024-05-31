@@ -67,4 +67,6 @@ export interface Customer {
   defaultShippingAddressId?: string;
   shippingAddressIds?: string[];
   billingAddressIds?: string[];
+  id?: string;
+  version?: number;
 }
