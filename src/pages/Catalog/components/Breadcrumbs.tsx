@@ -63,7 +63,11 @@ const Breadcrumbs = () => {
               </Typography>
             ),
           )
-        : null}
+        : Array.from({ length: 3 }, (_, index) => (
+            <Typography key={index} color='text.primary'>
+              Loading...
+            </Typography>
+          ))}
     </MuiBreadcrumbs>
   );
 };
