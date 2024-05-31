@@ -1,6 +1,6 @@
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../hooks/reduxHooks.tsx';
+import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks.tsx';
 import { HOME } from '../../routes/routes.tsx';
 import { Form, Formik } from 'formik';
 import {
@@ -25,6 +25,8 @@ import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
 } from '../../redux/services/me.ts';
+import { useLoginMutation } from '../../redux/services/auth.ts';
+import { updateClientCredentials } from '../../redux/features/authSlice.ts';
 import { changePasswordSchema, editProfileSchema } from '../../helpers/validationHelper.ts';
 import { Address } from '../../types/auth.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
@@ -48,6 +50,7 @@ interface ErrorResponse {
 
 const UserPage = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const { clientCredentials } = useAppSelector((state) => state.auth);
 
@@ -66,6 +69,7 @@ const UserPage = () => {
   const { data: userProfile, isLoading, refetch } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
   const [changePassword] = useChangePasswordMutation();
+  const [login] = useLoginMutation();
 
   useEffect(() => {
     if (!clientCredentials?.access_token) {
@@ -170,6 +174,13 @@ const UserPage = () => {
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       }).unwrap();
+
+      const loginResponse = await login({
+        username: userProfile.email,
+        password: values.newPassword,
+      }).unwrap();
+
+      dispatch(updateClientCredentials(loginResponse));
 
       setIsPasswordMode(false);
       setIsPasswordSnackbarError(false);
