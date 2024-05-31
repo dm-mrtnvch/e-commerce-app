@@ -1,14 +1,18 @@
 import { Container, Grid, Pagination, Stack } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Page } from '../../components';
 import { useGetProductProjectionsSearchQuery } from '../../redux/services/product-projections';
 import { CATALOG } from '../../routes/routes';
+import { Option } from '../../types/common';
 import { AttributePlainEnumValue } from '../../types/product-type';
+import generateFilter from '../../utils/filter';
+import Breadcrumbs from './components/Breadcrumbs';
+import Categories from './components/Categories';
 import Filter from './components/Filter';
 import ProductCard from './components/ProductCard';
-import Sort from './components/Sort';
-import { Option } from '../../types/common';
 import Search from './components/Search';
+import Sort from './components/Sort';
 
 const sortOptions = [
   {
@@ -30,6 +34,7 @@ const sortOptions = [
 ];
 
 const Catalog = () => {
+  const { categoryKey } = useParams();
   const [page, setPage] = useState<number>(1);
   const [activeSortType, setActiveSortType] = useState<Option>(sortOptions[0]);
   const [searchText, setSearchText] = useState<string>('');
@@ -39,27 +44,15 @@ const Catalog = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [selectedProductTypes, selectedAttributes, searchText, activeSortType]);
-
-  let filter = '';
-  if (selectedProductTypes.length > 0) {
-    filter += `productType.id:"${selectedProductTypes.join('","')}"`;
-  }
-  if (Object.keys(selectedAttributes).length > 0) {
-    const attributes = Object.entries(selectedAttributes)
-      .map(([key, values]) =>
-        values.length > 0
-          ? `variants.attributes.${key.toLocaleLowerCase()}.key:"${values.map((value) => value.key).join('","')}"`
-          : undefined,
-      )
-      .filter(Boolean)
-      .join('&filter=');
-    filter += filter ? `&filter=${attributes}` : attributes;
-  }
+  }, [selectedProductTypes, selectedAttributes, searchText, activeSortType, categoryKey]);
 
   const { data, isLoading, isFetching } = useGetProductProjectionsSearchQuery({
     offset: (page - 1) * 20,
-    filter: filter ? filter : undefined,
+    filter: generateFilter({
+      productTypes: selectedProductTypes,
+      attributes: selectedAttributes,
+      category: categoryKey ?? '',
+    }),
     sort: activeSortType.value,
     search: searchText,
   });
@@ -72,6 +65,9 @@ const Catalog = () => {
     <Page title={CATALOG.title}>
       <Container sx={{ py: 1 }}>
         <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Breadcrumbs />
+          </Grid>
           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
             <Search searchText={searchText} setSearchText={setSearchText} />
 
@@ -83,6 +79,7 @@ const Catalog = () => {
                 selectedProductTypes={selectedProductTypes}
                 setSelectedProductTypes={setSelectedProductTypes}
               />
+              <Categories />
             </Stack>
           </Grid>
           {data?.results?.map((product) => (
