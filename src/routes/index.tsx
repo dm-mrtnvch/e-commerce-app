@@ -13,7 +13,8 @@ const Routes = () => {
         <Route path={ROUTES.ABOUT_US.path} element={<PAGES.AboutUs />} />
         <Route path={ROUTES.CATALOG.path}>
           <Route index element={<PAGES.Catalog />} />
-          <Route path=':key' element={<PAGES.DetailedProduct />} />
+          <Route path=':categoryKey' element={<PAGES.Catalog />} />
+          <Route path='details/:key' element={<PAGES.DetailedProduct />} />
         </Route>
         <Route path={ROUTES.CART.path} element={<PAGES.Cart />} />
         <Route path={ROUTES.USER.path} element={<PAGES.User />} />

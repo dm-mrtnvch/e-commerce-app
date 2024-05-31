@@ -4,6 +4,7 @@ import { authApi } from './services/auth';
 import { productProjectionsApi } from './services/product-projections';
 import { productTypesApi } from './services/product-types';
 import { productsApi } from './services/products';
+import { categoryApi } from './services/category.ts';
 import { meApi } from './services/me.ts';
 
 const rootReducer = combineReducers({
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   [productProjectionsApi.reducerPath]: productProjectionsApi.reducer,
   [productsApi.reducerPath]: productsApi.reducer,
   [productTypesApi.reducerPath]: productTypesApi.reducer,
+  [categoryApi.reducerPath]: categoryApi.reducer,
   [meApi.reducerPath]: meApi.reducer,
 });
 
@@ -24,6 +26,7 @@ export const setupStore = () => {
         productProjectionsApi.middleware,
         productsApi.middleware,
         productTypesApi.middleware,
+        categoryApi.middleware,
         meApi.middleware,
       ),
   });
