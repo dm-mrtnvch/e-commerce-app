@@ -549,11 +549,26 @@ const UserPage = () => {
             </Formik>
           ) : (
             <>
-              <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                }}
+              >
                 <Typography variant='h6' component='div' gutterBottom>
                   {type.charAt(0).toUpperCase() + type.slice(1)} Address {index + 1}
                 </Typography>
-                <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    gap: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {address.id === userProfile?.defaultShippingAddressId && (
                     <Chip label='Default Shipping' color='primary' variant='outlined' />
                   )}
@@ -568,7 +583,12 @@ const UserPage = () => {
                   </IconButton>
                 </Box>
               </Box>
-              <Box sx={{ paddingLeft: 2 }}>
+              <Box
+                sx={{
+                  paddingLeft: { xs: 0, ms: 2 },
+                  marginTop: 2,
+                }}
+              >
                 <Typography variant='body1'>
                   <strong>Street Name:</strong> {address.streetName || 'not indicated'}
                 </Typography>
@@ -582,7 +602,15 @@ const UserPage = () => {
                   <strong>Country:</strong> {address.country || 'not indicated'}
                 </Typography>
               </Box>
-              <Box display='flex' justifyContent='flex-end' gap={2} mt={2}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: { xs: 'center', sm: 'flex-end' },
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 1, sm: 2 },
+                  mt: 1,
+                }}
+              >
                 <Button
                   variant='contained'
                   color='primary'
@@ -1019,12 +1047,12 @@ const UserPage = () => {
                   )}
                 </Formik>
               )}
-              <Typography variant='h6' gutterBottom>
+              <Typography variant='h6' gutterBottom mb={3}>
                 Shipping Addresses
               </Typography>
               {renderAddressCards(shippingAddresses, 'shipping')}
 
-              <Typography variant='h6' gutterBottom>
+              <Typography variant='h6' gutterBottom mt={6} mb={3}>
                 Billing Addresses
               </Typography>
               {renderAddressCards(billingAddresses, 'billing')}
