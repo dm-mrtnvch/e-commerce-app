@@ -85,7 +85,6 @@ const UserPage = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState<Address | null>(null);
 
   const { data: userProfile, isLoading, refetch } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
@@ -132,12 +131,11 @@ const UserPage = () => {
   };
 
   const handleAddAddressToggle = () => {
-    setCurrentAddress(null);
+    setEditAddressId(null);
     setIsAddressMode(!isAddressMode);
   };
 
   const handleEditAddressToggle = (address: Address) => {
-    setCurrentAddress(address);
     setEditAddressId(address.id as string);
   };
 
