@@ -534,15 +534,32 @@ const UserPage = () => {
                         </Typography>
                       )}
                     </FormControl>
-                    <Button
-                      variant='contained'
-                      color='primary'
-                      type='submit'
-                      sx={{ mt: 0 }}
-                      disabled={!dirty || isSubmitting}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 2,
+                      }}
                     >
-                      Save Address
-                    </Button>
+                      <Button
+                        variant='contained'
+                        color='primary'
+                        type='submit'
+                        sx={{ mt: 0 }}
+                        disabled={!dirty || isSubmitting}
+                      >
+                        Save Address
+                      </Button>
+                      <Button
+                        variant='outlined'
+                        color='primary'
+                        onClick={() => {
+                          setEditAddressId(null);
+                          setIsAddressMode(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </Box>
                   </Box>
                 </Form>
               )}
@@ -931,7 +948,7 @@ const UserPage = () => {
                   Manage Addresses
                 </Typography>
                 <Button variant='outlined' onClick={handleAddAddressToggle}>
-                  {isAddressMode ? 'Cancel' : 'Add Address'}
+                  {isAddressMode && !editAddressId ? 'Cancel' : '+ Add Address'}
                 </Button>
               </Box>
               {isAddressMode && !editAddressId && (
@@ -1033,15 +1050,22 @@ const UserPage = () => {
                             </Typography>
                           )}
                         </FormControl>
-                        <Button
-                          variant='contained'
-                          color='primary'
-                          type='submit'
-                          sx={{ mt: 0 }}
-                          disabled={!dirty || isSubmitting}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                          }}
                         >
-                          Save Address
-                        </Button>
+                          <Button
+                            variant='contained'
+                            color='primary'
+                            type='submit'
+                            sx={{ mt: 0 }}
+                            disabled={!dirty || isSubmitting}
+                          >
+                            Save Address
+                          </Button>
+                        </Box>
                       </Box>
                     </Form>
                   )}
