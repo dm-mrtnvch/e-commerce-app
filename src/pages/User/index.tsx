@@ -1,3 +1,4 @@
+// UserPage.tsx
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks.tsx';
@@ -31,8 +32,9 @@ import {
 } from '../../redux/services/me.ts';
 import { useLoginMutation } from '../../redux/services/auth.ts';
 import { updateClientCredentials } from '../../redux/features/authSlice.ts';
-import { changePasswordSchema, editProfileSchema, addressSchema } from '../../helpers/validationHelper.ts';
+import { changePasswordSchema, editProfileSchema, addressChangeSchema } from '../../helpers/validationHelper.ts';
 import { Address } from '../../types/auth.ts';
+import { ChangeUserInfo } from '../../types/me.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { COUNTRIES_ENUM } from '../Registration/constants.ts';
 
@@ -49,11 +51,12 @@ interface PasswordFormValues {
   confirmNewPassword: string;
 }
 
-export interface AddressFormValues {
+export interface AddressFormValuesType {
   streetName: string;
   city: string;
   postalCode: string;
   country: string;
+  addressType?: 'shipping' | 'billing';
 }
 
 interface ErrorResponse {
@@ -94,12 +97,13 @@ const UserPage = () => {
     }
   }, [clientCredentials, navigate]);
 
-  const shippingAddresses = userProfile?.addresses.filter((address) =>
-    userProfile?.shippingAddressIds?.includes(address.id as string),
-  );
-  const billingAddresses = userProfile?.addresses.filter((address) =>
-    userProfile?.billingAddressIds?.includes(address.id as string),
-  );
+  // temporarily commented
+  // const shippingAddresses = userProfile?.addresses.filter((address) =>
+  //   userProfile?.shippingAddressIds?.includes(address.id as string),
+  // );
+  // const billingAddresses = userProfile?.addresses.filter((address) =>
+  //   userProfile?.billingAddressIds?.includes(address.id as string),
+  // );
 
   const handleCloseUserSnackbar = (_event?: SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -237,7 +241,7 @@ const UserPage = () => {
     }
   };
 
-  const handleSaveAddress = async (values: AddressFormValues) => {
+  const handleSaveAddress = async (values: AddressFormValuesType) => {
     try {
       if (!userProfile?.id || !userProfile?.version) {
         setIsAddressSnackbarError(true);
@@ -246,30 +250,55 @@ const UserPage = () => {
         return;
       }
 
-      const updateActions = currentAddress
-        ? [
-            {
-              action: 'changeAddress',
-              addressId: currentAddress.id as string,
-              address: values,
-            } as const,
-          ]
-        : [
-            {
-              action: 'addAddress',
-              address: values,
-            } as const,
-          ];
+      const addAddressResponse = await updateUserProfile({
+        id: userProfile.id,
+        version: userProfile.version,
+        actions: [
+          {
+            action: 'addAddress',
+            address: {
+              streetName: values.streetName,
+              city: values.city,
+              postalCode: values.postalCode,
+              country: values.country,
+            },
+          },
+        ],
+      }).unwrap();
+
+      const newAddressId = addAddressResponse.addresses[addAddressResponse.addresses.length - 1].id;
+
+      const updateActions: ChangeUserInfo[] = [];
+      if (values.addressType === 'shipping') {
+        updateActions.push({
+          action: 'addShippingAddressId',
+          addressId: newAddressId as string,
+        } as const);
+      }
+
+      if (values.addressType === 'billing') {
+        updateActions.push({
+          action: 'addBillingAddressId',
+          addressId: newAddressId as string,
+        } as const);
+      }
+
+      if (!userProfile?.id || !addAddressResponse?.version) {
+        setIsAddressSnackbarError(true);
+        setAddressSnackbarMessage('Cannot save address');
+        setOpenAddressSnackbar(true);
+        return;
+      }
 
       await updateUserProfile({
         id: userProfile.id,
-        version: userProfile.version,
+        version: addAddressResponse.version,
         actions: updateActions,
       }).unwrap();
 
       setIsAddressMode(false);
       setIsAddressSnackbarError(false);
-      setAddressSnackbarMessage(currentAddress ? 'Address updated successfully' : 'Address added successfully');
+      setAddressSnackbarMessage('Address added successfully');
       setOpenAddressSnackbar(true);
       refetch();
     } catch (error) {
@@ -298,7 +327,7 @@ const UserPage = () => {
           {
             action: 'removeAddress',
             addressId,
-          } as const,
+          },
         ],
       }).unwrap();
 
@@ -332,7 +361,7 @@ const UserPage = () => {
           {
             action: 'setDefaultShippingAddress',
             addressId,
-          } as const,
+          },
         ],
       }).unwrap();
 
@@ -366,7 +395,7 @@ const UserPage = () => {
           {
             action: 'setDefaultBillingAddress',
             addressId,
-          } as const,
+          },
         ],
       }).unwrap();
 
@@ -661,8 +690,9 @@ const UserPage = () => {
                     city: currentAddress?.city || '',
                     postalCode: currentAddress?.postalCode || '',
                     country: currentAddress?.country || '',
+                    addressType: currentAddress?.addressType || 'shipping',
                   }}
-                  validationSchema={addressSchema}
+                  validationSchema={addressChangeSchema}
                   onSubmit={handleSaveAddress}
                 >
                   {({ values, handleChange, handleBlur, errors, touched, isSubmitting, dirty, setFieldValue }) => (
@@ -729,6 +759,26 @@ const UserPage = () => {
                           {touched.country && errors.country && (
                             <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
                               {errors.country}
+                            </Typography>
+                          )}
+                        </FormControl>
+                        <FormControl fullWidth error={touched.addressType && Boolean(errors.addressType)}>
+                          <InputLabel id='addressType-label'>Address Type</InputLabel>
+                          <Select
+                            labelId='addressType-label'
+                            id='addressType'
+                            name='addressType'
+                            value={values.addressType}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label='Address Type'
+                          >
+                            <MenuItem value='shipping'>Shipping</MenuItem>
+                            <MenuItem value='billing'>Billing</MenuItem>
+                          </Select>
+                          {touched.addressType && errors.addressType && (
+                            <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                              {errors.addressType}
                             </Typography>
                           )}
                         </FormControl>

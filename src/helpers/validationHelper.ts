@@ -25,7 +25,7 @@ const postalCodeRegex: Record<Country, RegExp> = {
   PL: /^[0-9]{2}-[0-9]{3}$/, // example: 01-797
 };
 
-export const addressSchema = object().shape({
+const addressSchema = object().shape({
   streetName: string().required('Street address is required'),
   city: string()
     .matches(/^[a-zA-Z\s]+$/, 'City cannot contain special characters or numbers')
@@ -107,4 +107,22 @@ export const changePasswordSchema = object().shape({
   confirmNewPassword: string()
     .required('Please confirm your new password')
     .oneOf([ref('newPassword')], 'Passwords must match'),
+});
+
+export const addressChangeSchema = object().shape({
+  streetName: string().required('Street address is required'),
+  city: string()
+    .matches(/^[a-zA-Z\s]+$/, 'City cannot contain special characters or numbers')
+    .required('City is required'),
+  postalCode: string()
+    .required('Postal code is required')
+    .test('isValidPostalCode', 'Invalid postal code format for the selected country', function (value) {
+      const country: Country = this.parent.country;
+      if (country && postalCodeRegex[country]) {
+        return postalCodeRegex[country].test(value || '');
+      }
+      return true;
+    }),
+  country: string().oneOf(Object.values(COUNTRIES_ENUM), 'Invalid country').required('Country is required'),
+  addressType: string().required('required'),
 });

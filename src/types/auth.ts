@@ -41,6 +41,7 @@ export interface Address {
   country: string;
   id?: string;
   state?: string;
+  addressType?: 'shipping' | 'billing';
 }
 
 export interface Customer {
