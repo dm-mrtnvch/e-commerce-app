@@ -97,14 +97,6 @@ const UserPage = () => {
     }
   }, [clientCredentials, navigate]);
 
-  // temporarily commented
-  // const shippingAddresses = userProfile?.addresses.filter((address) =>
-  //   userProfile?.shippingAddressIds?.includes(address.id as string),
-  // );
-  // const billingAddresses = userProfile?.addresses.filter((address) =>
-  //   userProfile?.billingAddressIds?.includes(address.id as string),
-  // );
-
   const handleCloseUserSnackbar = (_event?: SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
@@ -137,6 +129,7 @@ const UserPage = () => {
 
   const handleEditAddressToggle = (address: Address) => {
     setEditAddressId(address.id as string);
+    setIsAddressMode(true);
   };
 
   const handleSaveChanges = async (values: FormValues) => {
@@ -432,10 +425,221 @@ const UserPage = () => {
     }
   };
 
+  const renderAddressCards = (addresses: Address[], type: 'shipping' | 'billing') => {
+    return addresses.map((address, index) => (
+      <Card
+        key={address.id}
+        sx={{
+          backgroundColor:
+            address.id === userProfile?.defaultShippingAddressId || address.id === userProfile?.defaultBillingAddressId
+              ? '#D0ECFE'
+              : 'white',
+          marginBottom: 2,
+        }}
+      >
+        <CardContent>
+          {editAddressId === address.id ? (
+            <Formik
+              initialValues={{
+                id: address.id,
+                streetName: address.streetName,
+                city: address.city,
+                postalCode: address.postalCode,
+                country: address.country,
+                addressType: type,
+              }}
+              validationSchema={addressChangeSchema}
+              onSubmit={handleSaveAddress}
+            >
+              {({ values, handleChange, handleBlur, errors, touched, isSubmitting, dirty, setFieldValue }) => (
+                <Form>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 2,
+                      mb: 4,
+                    }}
+                  >
+                    <TextField
+                      fullWidth
+                      name='streetName'
+                      label='Street Name'
+                      value={values.streetName}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.streetName && Boolean(errors.streetName)}
+                      helperText={touched.streetName && errors.streetName}
+                    />
+                    <TextField
+                      fullWidth
+                      name='city'
+                      label='City'
+                      value={values.city}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.city && Boolean(errors.city)}
+                      helperText={touched.city && errors.city}
+                    />
+                    <TextField
+                      fullWidth
+                      name='postalCode'
+                      label='Postal Code'
+                      value={values.postalCode}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.postalCode && Boolean(errors.postalCode)}
+                      helperText={touched.postalCode && errors.postalCode}
+                    />
+                    <FormControl fullWidth error={touched.country && Boolean(errors.country)}>
+                      <InputLabel id='country-label'>Country</InputLabel>
+                      <Select
+                        labelId='country-label'
+                        id='country'
+                        name='country'
+                        value={values.country}
+                        onChange={(event) => setFieldValue('country', event.target.value)}
+                        onBlur={handleBlur}
+                        label='Country'
+                      >
+                        {Object.entries(COUNTRIES_ENUM).map(([countryName, countryCode]) => (
+                          <MenuItem key={countryCode} value={countryCode}>
+                            {countryName}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {touched.country && errors.country && (
+                        <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                          {errors.country}
+                        </Typography>
+                      )}
+                    </FormControl>
+                    <FormControl fullWidth error={touched.addressType && Boolean(errors.addressType)}>
+                      <InputLabel id='addressType-label'>Address Type</InputLabel>
+                      <Select
+                        labelId='addressType-label'
+                        id='addressType'
+                        name='addressType'
+                        value={values.addressType}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        label='Address Type'
+                      >
+                        <MenuItem value='shipping'>Shipping</MenuItem>
+                        <MenuItem value='billing'>Billing</MenuItem>
+                      </Select>
+                      {touched.addressType && errors.addressType && (
+                        <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                          {errors.addressType}
+                        </Typography>
+                      )}
+                    </FormControl>
+                    <Button
+                      variant='contained'
+                      color='primary'
+                      type='submit'
+                      sx={{ mt: 0 }}
+                      disabled={!dirty || isSubmitting}
+                    >
+                      Save Address
+                    </Button>
+                  </Box>
+                </Form>
+              )}
+            </Formik>
+          ) : (
+            <>
+              <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
+                <Typography variant='h6' component='div' gutterBottom>
+                  {type.charAt(0).toUpperCase() + type.slice(1)} Address {index + 1}
+                </Typography>
+                <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
+                  {address.id === userProfile?.defaultShippingAddressId && (
+                    <Chip label='Default Shipping' color='primary' variant='outlined' />
+                  )}
+                  {address.id === userProfile?.defaultBillingAddressId && (
+                    <Chip label='Default Billing' color='primary' variant='outlined' />
+                  )}
+                  <IconButton onClick={() => handleEditAddressToggle(address)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDeleteAddress(address.id as string)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </Box>
+              <Box sx={{ paddingLeft: 2 }}>
+                <Typography variant='body1'>
+                  <strong>Street Name:</strong> {address.streetName || 'not indicated'}
+                </Typography>
+                <Typography variant='body1'>
+                  <strong>City:</strong> {address.city || 'not indicated'}
+                </Typography>
+                <Typography variant='body1'>
+                  <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
+                </Typography>
+                <Typography variant='body1'>
+                  <strong>Country:</strong> {address.country || 'not indicated'}
+                </Typography>
+              </Box>
+              <Box display='flex' justifyContent='flex-end' gap={2} mt={2}>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  onClick={() => handleSetDefaultShippingAddress(address.id as string)}
+                  disabled={address.id === userProfile?.defaultShippingAddressId}
+                >
+                  Set as Default Shipping
+                </Button>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  onClick={() => handleSetDefaultBillingAddress(address.id as string)}
+                  disabled={address.id === userProfile?.defaultBillingAddressId}
+                >
+                  Set as Default Billing
+                </Button>
+              </Box>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    ));
+  };
+
+  const defaultShippingAddress = userProfile?.addresses.find(
+    (address) => address.id === userProfile?.defaultShippingAddressId,
+  );
+  const defaultBillingAddress = userProfile?.addresses.find(
+    (address) => address.id === userProfile?.defaultBillingAddressId,
+  );
+
+  const shippingAddresses = userProfile?.shippingAddressIds
+    ? [
+        ...(defaultShippingAddress ? [defaultShippingAddress] : []),
+        ...userProfile.addresses.filter(
+          (address) =>
+            userProfile.shippingAddressIds?.includes(address.id as string) &&
+            address.id !== userProfile.defaultShippingAddressId,
+        ),
+      ]
+    : [];
+
+  const billingAddresses = userProfile?.billingAddressIds
+    ? [
+        ...(defaultBillingAddress ? [defaultBillingAddress] : []),
+        ...userProfile.addresses.filter(
+          (address) =>
+            userProfile.billingAddressIds?.includes(address.id as string) &&
+            address.id !== userProfile.defaultBillingAddressId,
+        ),
+      ]
+    : [];
+
   if (isLoading) {
     return (
       <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
-        <CircularProgress size={60} />
+        <CircularProgress size={45} />
       </Box>
     );
   }
@@ -815,195 +1019,15 @@ const UserPage = () => {
                   )}
                 </Formik>
               )}
-              {userProfile?.addresses.map((address, index) => (
-                <Card
-                  key={address.id}
-                  sx={{
-                    backgroundColor:
-                      address.id === userProfile.defaultShippingAddressId ||
-                      address.id === userProfile.defaultBillingAddressId
-                        ? '#D0ECFE'
-                        : 'white',
-                    marginBottom: 2,
-                  }}
-                >
-                  <CardContent>
-                    {editAddressId === address.id ? (
-                      <Formik
-                        initialValues={{
-                          id: address.id,
-                          streetName: address.streetName,
-                          city: address.city,
-                          postalCode: address.postalCode,
-                          country: address.country,
-                          addressType: address.addressType ? 'shipping' : 'billing',
-                        }}
-                        validationSchema={addressChangeSchema}
-                        onSubmit={handleSaveAddress}
-                      >
-                        {({
-                          values,
-                          handleChange,
-                          handleBlur,
-                          errors,
-                          touched,
-                          isSubmitting,
-                          dirty,
-                          setFieldValue,
-                        }) => (
-                          <Form>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                                mb: 4,
-                              }}
-                            >
-                              <TextField
-                                fullWidth
-                                name='streetName'
-                                label='Street Name'
-                                value={values.streetName}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                error={touched.streetName && Boolean(errors.streetName)}
-                                helperText={touched.streetName && errors.streetName}
-                              />
-                              <TextField
-                                fullWidth
-                                name='city'
-                                label='City'
-                                value={values.city}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                error={touched.city && Boolean(errors.city)}
-                                helperText={touched.city && errors.city}
-                              />
-                              <TextField
-                                fullWidth
-                                name='postalCode'
-                                label='Postal Code'
-                                value={values.postalCode}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                error={touched.postalCode && Boolean(errors.postalCode)}
-                                helperText={touched.postalCode && errors.postalCode}
-                              />
-                              <FormControl fullWidth error={touched.country && Boolean(errors.country)}>
-                                <InputLabel id='country-label'>Country</InputLabel>
-                                <Select
-                                  labelId='country-label'
-                                  id='country'
-                                  name='country'
-                                  value={values.country}
-                                  onChange={(event) => setFieldValue('country', event.target.value)}
-                                  onBlur={handleBlur}
-                                  label='Country'
-                                >
-                                  {Object.entries(COUNTRIES_ENUM).map(([countryName, countryCode]) => (
-                                    <MenuItem key={countryCode} value={countryCode}>
-                                      {countryName}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                                {touched.country && errors.country && (
-                                  <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
-                                    {errors.country}
-                                  </Typography>
-                                )}
-                              </FormControl>
-                              <FormControl fullWidth error={touched.addressType && Boolean(errors.addressType)}>
-                                <InputLabel id='addressType-label'>Address Type</InputLabel>
-                                <Select
-                                  labelId='addressType-label'
-                                  id='addressType'
-                                  name='addressType'
-                                  value={values.addressType}
-                                  onChange={handleChange}
-                                  onBlur={handleBlur}
-                                  label='Address Type'
-                                >
-                                  <MenuItem value='shipping'>Shipping</MenuItem>
-                                  <MenuItem value='billing'>Billing</MenuItem>
-                                </Select>
-                                {touched.addressType && errors.addressType && (
-                                  <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
-                                    {errors.addressType}
-                                  </Typography>
-                                )}
-                              </FormControl>
-                              <Button
-                                variant='contained'
-                                color='primary'
-                                type='submit'
-                                sx={{ mt: 0 }}
-                                disabled={!dirty || isSubmitting}
-                              >
-                                Save Address
-                              </Button>
-                            </Box>
-                          </Form>
-                        )}
-                      </Formik>
-                    ) : (
-                      <>
-                        <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
-                          <Typography variant='h6' component='div' gutterBottom>
-                            Address {index + 1}
-                          </Typography>
-                          <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
-                            {address.id === userProfile.defaultShippingAddressId && (
-                              <Chip label='Default Shipping' color='primary' variant='outlined' />
-                            )}
-                            {address.id === userProfile.defaultBillingAddressId && (
-                              <Chip label='Default Billing' color='primary' variant='outlined' />
-                            )}
-                            <IconButton onClick={() => handleEditAddressToggle(address)}>
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton onClick={() => handleDeleteAddress(address.id as string)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </Box>
-                        </Box>
-                        <Box sx={{ paddingLeft: 2 }}>
-                          <Typography variant='body1'>
-                            <strong>Street Name:</strong> {address.streetName || 'not indicated'}
-                          </Typography>
-                          <Typography variant='body1'>
-                            <strong>City:</strong> {address.city || 'not indicated'}
-                          </Typography>
-                          <Typography variant='body1'>
-                            <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
-                          </Typography>
-                          <Typography variant='body1'>
-                            <strong>Country:</strong> {address.country || 'not indicated'}
-                          </Typography>
-                        </Box>
-                        <Box display='flex' justifyContent='flex-end' gap={2} mt={2}>
-                          <Button
-                            variant='contained'
-                            color='primary'
-                            onClick={() => handleSetDefaultShippingAddress(address.id as string)}
-                            disabled={address.id === userProfile.defaultShippingAddressId}
-                          >
-                            Set as Default Shipping
-                          </Button>
-                          <Button
-                            variant='contained'
-                            color='primary'
-                            onClick={() => handleSetDefaultBillingAddress(address.id as string)}
-                            disabled={address.id === userProfile.defaultBillingAddressId}
-                          >
-                            Set as Default Billing
-                          </Button>
-                        </Box>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+              <Typography variant='h6' gutterBottom>
+                Shipping Addresses
+              </Typography>
+              {renderAddressCards(shippingAddresses, 'shipping')}
+
+              <Typography variant='h6' gutterBottom>
+                Billing Addresses
+              </Typography>
+              {renderAddressCards(billingAddresses, 'billing')}
               <Snackbar
                 open={openAddressSnackbar}
                 autoHideDuration={4000}
