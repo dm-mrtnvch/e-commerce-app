@@ -1,4 +1,3 @@
-// UserPage.tsx
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/reduxHooks.tsx';
@@ -52,6 +51,7 @@ interface PasswordFormValues {
 }
 
 export interface AddressFormValuesType {
+  id?: string;
   streetName: string;
   city: string;
   postalCode: string;
@@ -72,6 +72,7 @@ const UserPage = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordMode, setIsPasswordMode] = useState(false);
   const [isAddressMode, setIsAddressMode] = useState(false);
+  const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [openUserSnackbar, setOpenUserSnackbar] = useState<boolean>(false);
   const [isUserSnackbarError, setIsUserSnackbarError] = useState<boolean>(false);
   const [userSnackbarMessage, setUserSnackbarMessage] = useState<string>('');
@@ -137,7 +138,7 @@ const UserPage = () => {
 
   const handleEditAddressToggle = (address: Address) => {
     setCurrentAddress(address);
-    setIsAddressMode(true);
+    setEditAddressId(address.id as string);
   };
 
   const handleSaveChanges = async (values: FormValues) => {
@@ -250,55 +251,75 @@ const UserPage = () => {
         return;
       }
 
-      const addAddressResponse = await updateUserProfile({
-        id: userProfile.id,
-        version: userProfile.version,
-        actions: [
-          {
-            action: 'addAddress',
-            address: {
-              streetName: values.streetName,
-              city: values.city,
-              postalCode: values.postalCode,
-              country: values.country,
+      const addressValues = {
+        streetName: values.streetName,
+        city: values.city,
+        postalCode: values.postalCode,
+        country: values.country,
+      };
+
+      if (editAddressId) {
+        // edit existing address
+        await updateUserProfile({
+          id: userProfile.id,
+          version: userProfile.version,
+          actions: [
+            {
+              action: 'changeAddress',
+              addressId: editAddressId,
+              address: addressValues,
             },
-          },
-        ],
-      }).unwrap();
+          ],
+        }).unwrap();
 
-      const newAddressId = addAddressResponse.addresses[addAddressResponse.addresses.length - 1].id;
+        setEditAddressId(null);
+      } else {
+        // add new address
+        const addAddressResponse = await updateUserProfile({
+          id: userProfile.id,
+          version: userProfile.version,
+          actions: [
+            {
+              action: 'addAddress',
+              address: addressValues,
+            },
+          ],
+        }).unwrap();
 
-      const updateActions: ChangeUserInfo[] = [];
-      if (values.addressType === 'shipping') {
-        updateActions.push({
-          action: 'addShippingAddressId',
-          addressId: newAddressId as string,
-        } as const);
+        const newAddressId = addAddressResponse.addresses[addAddressResponse.addresses.length - 1].id;
+
+        const updateActions: ChangeUserInfo[] = [];
+        if (values.addressType === 'shipping') {
+          updateActions.push({
+            action: 'addShippingAddressId',
+            addressId: newAddressId as string,
+          } as const);
+        }
+
+        if (values.addressType === 'billing') {
+          updateActions.push({
+            action: 'addBillingAddressId',
+            addressId: newAddressId as string,
+          } as const);
+        }
+
+        if (!userProfile.id || !addAddressResponse.version) {
+          setIsAddressSnackbarError(true);
+          setAddressSnackbarMessage('Cannot save address');
+          setOpenAddressSnackbar(true);
+          return;
+        }
+
+        await updateUserProfile({
+          id: userProfile.id,
+          version: addAddressResponse.version,
+          actions: updateActions,
+        }).unwrap();
       }
-
-      if (values.addressType === 'billing') {
-        updateActions.push({
-          action: 'addBillingAddressId',
-          addressId: newAddressId as string,
-        } as const);
-      }
-
-      if (!userProfile?.id || !addAddressResponse?.version) {
-        setIsAddressSnackbarError(true);
-        setAddressSnackbarMessage('Cannot save address');
-        setOpenAddressSnackbar(true);
-        return;
-      }
-
-      await updateUserProfile({
-        id: userProfile.id,
-        version: addAddressResponse.version,
-        actions: updateActions,
-      }).unwrap();
 
       setIsAddressMode(false);
       setIsAddressSnackbarError(false);
-      setAddressSnackbarMessage('Address added successfully');
+      setAddressSnackbarMessage(editAddressId ? 'Address updated successfully' : 'Address added successfully');
       setOpenAddressSnackbar(true);
       refetch();
     } catch (error) {
@@ -683,14 +704,14 @@ const UserPage = () => {
                   {isAddressMode ? 'Cancel' : 'Add Address'}
                 </Button>
               </Box>
-              {isAddressMode && (
+              {isAddressMode && !editAddressId && (
                 <Formik
                   initialValues={{
-                    streetName: currentAddress?.streetName || '',
-                    city: currentAddress?.city || '',
-                    postalCode: currentAddress?.postalCode || '',
-                    country: currentAddress?.country || '',
-                    addressType: currentAddress?.addressType || 'shipping',
+                    streetName: '',
+                    city: '',
+                    postalCode: '',
+                    country: '',
+                    addressType: 'shipping',
                   }}
                   validationSchema={addressChangeSchema}
                   onSubmit={handleSaveAddress}
@@ -809,60 +830,179 @@ const UserPage = () => {
                   }}
                 >
                   <CardContent>
-                    <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
-                      <Typography variant='h6' component='div' gutterBottom>
-                        Address {index + 1}
-                      </Typography>
-                      <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
-                        {address.id === userProfile.defaultShippingAddressId && (
-                          <Chip label='Default Shipping' color='primary' variant='outlined' />
-                        )}
-                        {address.id === userProfile.defaultBillingAddressId && (
-                          <Chip label='Default Billing' color='primary' variant='outlined' />
-                        )}
-                        <IconButton onClick={() => handleEditAddressToggle(address)}>
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton onClick={() => handleDeleteAddress(address.id as string)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                    <Box sx={{ paddingLeft: 2 }}>
-                      <Typography variant='body1'>
-                        <strong>Street Name:</strong> {address.streetName || 'not indicated'}
-                      </Typography>
-                      <Typography variant='body1'>
-                        <strong>City:</strong> {address.city || 'not indicated'}
-                      </Typography>
-                      <Typography variant='body1'>
-                        <strong>State:</strong> {address.state || 'not indicated'}
-                      </Typography>
-                      <Typography variant='body1'>
-                        <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
-                      </Typography>
-                      <Typography variant='body1'>
-                        <strong>Country:</strong> {address.country || 'not indicated'}
-                      </Typography>
-                    </Box>
-                    <Box display='flex' justifyContent='flex-end' gap={2} mt={2}>
-                      <Button
-                        variant='contained'
-                        color='primary'
-                        onClick={() => handleSetDefaultShippingAddress(address.id as string)}
-                        disabled={address.id === userProfile.defaultShippingAddressId}
+                    {editAddressId === address.id ? (
+                      <Formik
+                        initialValues={{
+                          id: address.id,
+                          streetName: address.streetName,
+                          city: address.city,
+                          postalCode: address.postalCode,
+                          country: address.country,
+                          addressType: address.addressType ? 'shipping' : 'billing',
+                        }}
+                        validationSchema={addressChangeSchema}
+                        onSubmit={handleSaveAddress}
                       >
-                        Set as Default Shipping
-                      </Button>
-                      <Button
-                        variant='contained'
-                        color='primary'
-                        onClick={() => handleSetDefaultBillingAddress(address.id as string)}
-                        disabled={address.id === userProfile.defaultBillingAddressId}
-                      >
-                        Set as Default Billing
-                      </Button>
-                    </Box>
+                        {({
+                          values,
+                          handleChange,
+                          handleBlur,
+                          errors,
+                          touched,
+                          isSubmitting,
+                          dirty,
+                          setFieldValue,
+                        }) => (
+                          <Form>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
+                                mb: 4,
+                              }}
+                            >
+                              <TextField
+                                fullWidth
+                                name='streetName'
+                                label='Street Name'
+                                value={values.streetName}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.streetName && Boolean(errors.streetName)}
+                                helperText={touched.streetName && errors.streetName}
+                              />
+                              <TextField
+                                fullWidth
+                                name='city'
+                                label='City'
+                                value={values.city}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.city && Boolean(errors.city)}
+                                helperText={touched.city && errors.city}
+                              />
+                              <TextField
+                                fullWidth
+                                name='postalCode'
+                                label='Postal Code'
+                                value={values.postalCode}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.postalCode && Boolean(errors.postalCode)}
+                                helperText={touched.postalCode && errors.postalCode}
+                              />
+                              <FormControl fullWidth error={touched.country && Boolean(errors.country)}>
+                                <InputLabel id='country-label'>Country</InputLabel>
+                                <Select
+                                  labelId='country-label'
+                                  id='country'
+                                  name='country'
+                                  value={values.country}
+                                  onChange={(event) => setFieldValue('country', event.target.value)}
+                                  onBlur={handleBlur}
+                                  label='Country'
+                                >
+                                  {Object.entries(COUNTRIES_ENUM).map(([countryName, countryCode]) => (
+                                    <MenuItem key={countryCode} value={countryCode}>
+                                      {countryName}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                                {touched.country && errors.country && (
+                                  <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                                    {errors.country}
+                                  </Typography>
+                                )}
+                              </FormControl>
+                              <FormControl fullWidth error={touched.addressType && Boolean(errors.addressType)}>
+                                <InputLabel id='addressType-label'>Address Type</InputLabel>
+                                <Select
+                                  labelId='addressType-label'
+                                  id='addressType'
+                                  name='addressType'
+                                  value={values.addressType}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  label='Address Type'
+                                >
+                                  <MenuItem value='shipping'>Shipping</MenuItem>
+                                  <MenuItem value='billing'>Billing</MenuItem>
+                                </Select>
+                                {touched.addressType && errors.addressType && (
+                                  <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                                    {errors.addressType}
+                                  </Typography>
+                                )}
+                              </FormControl>
+                              <Button
+                                variant='contained'
+                                color='primary'
+                                type='submit'
+                                sx={{ mt: 0 }}
+                                disabled={!dirty || isSubmitting}
+                              >
+                                Save Address
+                              </Button>
+                            </Box>
+                          </Form>
+                        )}
+                      </Formik>
+                    ) : (
+                      <>
+                        <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
+                          <Typography variant='h6' component='div' gutterBottom>
+                            Address {index + 1}
+                          </Typography>
+                          <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
+                            {address.id === userProfile.defaultShippingAddressId && (
+                              <Chip label='Default Shipping' color='primary' variant='outlined' />
+                            )}
+                            {address.id === userProfile.defaultBillingAddressId && (
+                              <Chip label='Default Billing' color='primary' variant='outlined' />
+                            )}
+                            <IconButton onClick={() => handleEditAddressToggle(address)}>
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton onClick={() => handleDeleteAddress(address.id as string)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                        <Box sx={{ paddingLeft: 2 }}>
+                          <Typography variant='body1'>
+                            <strong>Street Name:</strong> {address.streetName || 'not indicated'}
+                          </Typography>
+                          <Typography variant='body1'>
+                            <strong>City:</strong> {address.city || 'not indicated'}
+                          </Typography>
+                          <Typography variant='body1'>
+                            <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
+                          </Typography>
+                          <Typography variant='body1'>
+                            <strong>Country:</strong> {address.country || 'not indicated'}
+                          </Typography>
+                        </Box>
+                        <Box display='flex' justifyContent='flex-end' gap={2} mt={2}>
+                          <Button
+                            variant='contained'
+                            color='primary'
+                            onClick={() => handleSetDefaultShippingAddress(address.id as string)}
+                            disabled={address.id === userProfile.defaultShippingAddressId}
+                          >
+                            Set as Default Shipping
+                          </Button>
+                          <Button
+                            variant='contained'
+                            color='primary'
+                            onClick={() => handleSetDefaultBillingAddress(address.id as string)}
+                            disabled={address.id === userProfile.defaultBillingAddressId}
+                          >
+                            Set as Default Billing
+                          </Button>
+                        </Box>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               ))}
