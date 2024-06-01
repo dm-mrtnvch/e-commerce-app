@@ -1,4 +1,4 @@
-import { object, string, date, mixed } from 'yup';
+import { object, string, date, mixed, ref } from 'yup';
 import { COUNTRIES_ENUM } from '../pages/Registration/constants.ts';
 
 export const loginFormValidationSchema = object({
@@ -92,4 +92,19 @@ export const editProfileSchema = object().shape({
     .email('Enter a valid email')
     .matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{1,}$/i, 'Enter a valid email')
     .required('Email is required'),
+});
+
+export const changePasswordSchema = object().shape({
+  currentPassword: string().required('Current password is required'),
+  newPassword: string()
+    .min(8, 'Password should be of minimum 8 characters length')
+    .matches(/^(?=.*[a-z])/, 'Password must contain at least one lowercase letter (a-z)')
+    .matches(/^(?=.*[A-Z])/, 'Password must contain at least one uppercase letter (A-Z)')
+    .matches(/^(?=.*\d)/, 'Password must contain at least one digit (0-9)')
+    .matches(/^(?=.*[@$!%*?&])/, 'Password must contain at least one special character (!@#$%^&*)')
+    .matches(/^(?=\S+$)/, 'Password must not contain leading or trailing whitespace')
+    .required('Password is required'),
+  confirmNewPassword: string()
+    .required('Please confirm your new password')
+    .oneOf([ref('newPassword')], 'Passwords must match'),
 });
