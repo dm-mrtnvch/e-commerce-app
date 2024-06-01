@@ -524,6 +524,7 @@ const UserPage = () => {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         label='Address Type'
+                        disabled={!!editAddressId}
                       >
                         <MenuItem value='shipping'>Shipping</MenuItem>
                         <MenuItem value='billing'>Billing</MenuItem>
