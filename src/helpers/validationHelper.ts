@@ -25,7 +25,7 @@ const postalCodeRegex: Record<Country, RegExp> = {
   PL: /^[0-9]{2}-[0-9]{3}$/, // example: 01-797
 };
 
-const addressSchema = object().shape({
+export const addressSchema = object().shape({
   streetName: string().required('Street address is required'),
   city: string()
     .matches(/^[a-zA-Z\s]+$/, 'City cannot contain special characters or numbers')

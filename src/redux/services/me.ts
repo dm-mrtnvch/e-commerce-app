@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../store';
-import { Customer } from '../../types/auth.ts';
+import { Customer, Address } from '../../types/auth.ts';
 import { ChangeUserInfo } from '../../types/me.ts';
 
 const API_BASE_URL = import.meta.env.VITE_HOST;
@@ -43,7 +43,92 @@ export const meApi = createApi({
         body: { id, version, currentPassword, newPassword },
       }),
     }),
+    addAddress: builder.mutation<void, { id: string; version: number; address: Address }>({
+      query: ({ id, version, address }) => ({
+        url: `/customers/${id}`,
+        method: 'POST',
+        body: {
+          version,
+          actions: [
+            {
+              action: 'addAddress',
+              address,
+            },
+          ],
+        },
+      }),
+    }),
+    removeAddress: builder.mutation<void, { id: string; version: number; addressId: string }>({
+      query: ({ id, version, addressId }) => ({
+        url: `/customers/${id}`,
+        method: 'POST',
+        body: {
+          version,
+          actions: [
+            {
+              action: 'removeAddress',
+              addressId,
+            },
+          ],
+        },
+      }),
+    }),
+    updateAddress: builder.mutation<void, { id: string; version: number; addressId: string; address: Address }>({
+      query: ({ id, version, addressId, address }) => ({
+        url: `/customers/${id}`,
+        method: 'POST',
+        body: {
+          version,
+          actions: [
+            {
+              action: 'changeAddress',
+              addressId,
+              address,
+            },
+          ],
+        },
+      }),
+    }),
+    setDefaultShippingAddress: builder.mutation<void, { id: string; version: number; addressId: string }>({
+      query: ({ id, version, addressId }) => ({
+        url: `/customers/${id}`,
+        method: 'POST',
+        body: {
+          version,
+          actions: [
+            {
+              action: 'setDefaultShippingAddress',
+              addressId,
+            },
+          ],
+        },
+      }),
+    }),
+    setDefaultBillingAddress: builder.mutation<void, { id: string; version: number; addressId: string }>({
+      query: ({ id, version, addressId }) => ({
+        url: `/customers/${id}`,
+        method: 'POST',
+        body: {
+          version,
+          actions: [
+            {
+              action: 'setDefaultBillingAddress',
+              addressId,
+            },
+          ],
+        },
+      }),
+    }),
   }),
 });
 
-export const { useGetUserProfileQuery, useUpdateUserProfileMutation, useChangePasswordMutation } = meApi;
+export const {
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+  useChangePasswordMutation,
+  useAddAddressMutation,
+  useRemoveAddressMutation,
+  useUpdateAddressMutation,
+  useSetDefaultShippingAddressMutation,
+  useSetDefaultBillingAddressMutation,
+} = meApi;

@@ -12,14 +12,18 @@ import {
   Chip,
   CircularProgress,
   Container,
+  FormControl,
   Grid,
   IconButton,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
   Snackbar,
   Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
   useChangePasswordMutation,
   useGetUserProfileQuery,
@@ -27,9 +31,10 @@ import {
 } from '../../redux/services/me.ts';
 import { useLoginMutation } from '../../redux/services/auth.ts';
 import { updateClientCredentials } from '../../redux/features/authSlice.ts';
-import { changePasswordSchema, editProfileSchema } from '../../helpers/validationHelper.ts';
+import { changePasswordSchema, editProfileSchema, addressSchema } from '../../helpers/validationHelper.ts';
 import { Address } from '../../types/auth.ts';
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { COUNTRIES_ENUM } from '../Registration/constants.ts';
 
 interface FormValues {
   email: string;
@@ -44,6 +49,13 @@ interface PasswordFormValues {
   confirmNewPassword: string;
 }
 
+export interface AddressFormValues {
+  streetName: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
 interface ErrorResponse {
   message?: string;
 }
@@ -56,15 +68,20 @@ const UserPage = () => {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordMode, setIsPasswordMode] = useState(false);
+  const [isAddressMode, setIsAddressMode] = useState(false);
   const [openUserSnackbar, setOpenUserSnackbar] = useState<boolean>(false);
   const [isUserSnackbarError, setIsUserSnackbarError] = useState<boolean>(false);
   const [userSnackbarMessage, setUserSnackbarMessage] = useState<string>('');
   const [openPasswordSnackbar, setOpenPasswordSnackbar] = useState<boolean>(false);
   const [isPasswordSnackbarError, setIsPasswordSnackbarError] = useState<boolean>(false);
   const [passwordSnackbarMessage, setPasswordSnackbarMessage] = useState<string>('');
+  const [openAddressSnackbar, setOpenAddressSnackbar] = useState<boolean>(false);
+  const [isAddressSnackbarError, setIsAddressSnackbarError] = useState<boolean>(false);
+  const [addressSnackbarMessage, setAddressSnackbarMessage] = useState<string>('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [currentAddress, setCurrentAddress] = useState<Address | null>(null);
 
   const { data: userProfile, isLoading, refetch } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
@@ -98,8 +115,25 @@ const UserPage = () => {
     setOpenPasswordSnackbar(false);
   };
 
+  const handleCloseAddressSnackbar = (_event?: SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenAddressSnackbar(false);
+  };
+
   const handleEditToggle = () => {
     setIsEditMode(!isEditMode);
+  };
+
+  const handleAddAddressToggle = () => {
+    setCurrentAddress(null);
+    setIsAddressMode(!isAddressMode);
+  };
+
+  const handleEditAddressToggle = (address: Address) => {
+    setCurrentAddress(address);
+    setIsAddressMode(true);
   };
 
   const handleSaveChanges = async (values: FormValues) => {
@@ -200,6 +234,153 @@ const UserPage = () => {
         setPasswordSnackbarMessage(errorResponse?.message || 'Failed to change password');
       }
       setOpenPasswordSnackbar(true);
+    }
+  };
+
+  const handleSaveAddress = async (values: AddressFormValues) => {
+    try {
+      if (!userProfile?.id || !userProfile?.version) {
+        setIsAddressSnackbarError(true);
+        setAddressSnackbarMessage('User profile ID or version is undefined');
+        setOpenAddressSnackbar(true);
+        return;
+      }
+
+      const updateActions = currentAddress
+        ? [
+            {
+              action: 'changeAddress',
+              addressId: currentAddress.id as string,
+              address: values,
+            } as const,
+          ]
+        : [
+            {
+              action: 'addAddress',
+              address: values,
+            } as const,
+          ];
+
+      await updateUserProfile({
+        id: userProfile.id,
+        version: userProfile.version,
+        actions: updateActions,
+      }).unwrap();
+
+      setIsAddressMode(false);
+      setIsAddressSnackbarError(false);
+      setAddressSnackbarMessage(currentAddress ? 'Address updated successfully' : 'Address added successfully');
+      setOpenAddressSnackbar(true);
+      refetch();
+    } catch (error) {
+      const fetchError = error as FetchBaseQueryError;
+      const errorResponse = fetchError.data as ErrorResponse;
+
+      setIsAddressSnackbarError(true);
+      setAddressSnackbarMessage(errorResponse?.message || 'Failed to update address');
+      setOpenAddressSnackbar(true);
+    }
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    try {
+      if (!userProfile?.id || !userProfile?.version) {
+        setIsAddressSnackbarError(true);
+        setAddressSnackbarMessage('User profile ID or version is undefined');
+        setOpenAddressSnackbar(true);
+        return;
+      }
+
+      await updateUserProfile({
+        id: userProfile.id,
+        version: userProfile.version,
+        actions: [
+          {
+            action: 'removeAddress',
+            addressId,
+          } as const,
+        ],
+      }).unwrap();
+
+      setIsAddressSnackbarError(false);
+      setAddressSnackbarMessage('Address deleted successfully');
+      setOpenAddressSnackbar(true);
+      refetch();
+    } catch (error) {
+      const fetchError = error as FetchBaseQueryError;
+      const errorResponse = fetchError.data as ErrorResponse;
+
+      setIsAddressSnackbarError(true);
+      setAddressSnackbarMessage(errorResponse?.message || 'Failed to delete address');
+      setOpenAddressSnackbar(true);
+    }
+  };
+
+  const handleSetDefaultShippingAddress = async (addressId: string) => {
+    try {
+      if (!userProfile?.id || !userProfile?.version) {
+        setIsAddressSnackbarError(true);
+        setAddressSnackbarMessage('User profile ID or version is undefined');
+        setOpenAddressSnackbar(true);
+        return;
+      }
+
+      await updateUserProfile({
+        id: userProfile.id,
+        version: userProfile.version,
+        actions: [
+          {
+            action: 'setDefaultShippingAddress',
+            addressId,
+          } as const,
+        ],
+      }).unwrap();
+
+      setIsAddressSnackbarError(false);
+      setAddressSnackbarMessage('Default shipping address updated successfully');
+      setOpenAddressSnackbar(true);
+      refetch();
+    } catch (error) {
+      const fetchError = error as FetchBaseQueryError;
+      const errorResponse = fetchError.data as ErrorResponse;
+
+      setIsAddressSnackbarError(true);
+      setAddressSnackbarMessage(errorResponse?.message || 'Failed to update default shipping address');
+      setOpenAddressSnackbar(true);
+    }
+  };
+
+  const handleSetDefaultBillingAddress = async (addressId: string) => {
+    try {
+      if (!userProfile?.id || !userProfile?.version) {
+        setIsAddressSnackbarError(true);
+        setAddressSnackbarMessage('User profile ID or version is undefined');
+        setOpenAddressSnackbar(true);
+        return;
+      }
+
+      await updateUserProfile({
+        id: userProfile.id,
+        version: userProfile.version,
+        actions: [
+          {
+            action: 'setDefaultBillingAddress',
+            addressId,
+          } as const,
+        ],
+      }).unwrap();
+
+      setIsAddressSnackbarError(false);
+      setAddressSnackbarMessage('Default billing address updated successfully');
+      setOpenAddressSnackbar(true);
+      refetch();
+    } catch (error) {
+      const fetchError = error as FetchBaseQueryError;
+      const errorResponse = fetchError.data as ErrorResponse;
+
+      setIsAddressSnackbarError(true);
+      setAddressSnackbarMessage(errorResponse?.message || 'Failed to update default billing address');
+      setOpenAddressSnackbar(true);
     }
   };
 
@@ -463,82 +644,196 @@ const UserPage = () => {
         </Grid>
 
         <Grid item xs={12}>
-          {shippingAddresses?.map((address: Address, index) => (
-            <Card
-              key={address.id}
-              sx={{
-                backgroundColor: address.id === userProfile?.defaultShippingAddressId ? '#D0ECFE' : 'white',
-              }}
-            >
-              <CardContent>
-                <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
-                  <Typography variant='h6' component='div' gutterBottom>
-                    Shipping Address {index + 1}
-                  </Typography>
-                  {address.id === userProfile?.defaultShippingAddressId && (
-                    <Chip label='Default Shipping' color='primary' variant='outlined' sx={{ padding: 1 }} />
+          <Card>
+            <CardContent>
+              <Box display='flex' justifyContent='space-between' alignItems='center' gap={2} mb={3}>
+                <Typography variant='h5' component='div' gutterBottom>
+                  Manage Addresses
+                </Typography>
+                <Button variant='outlined' onClick={handleAddAddressToggle}>
+                  {isAddressMode ? 'Cancel' : 'Add Address'}
+                </Button>
+              </Box>
+              {isAddressMode && (
+                <Formik
+                  initialValues={{
+                    streetName: currentAddress?.streetName || '',
+                    city: currentAddress?.city || '',
+                    postalCode: currentAddress?.postalCode || '',
+                    country: currentAddress?.country || '',
+                  }}
+                  validationSchema={addressSchema}
+                  onSubmit={handleSaveAddress}
+                >
+                  {({ values, handleChange, handleBlur, errors, touched, isSubmitting, dirty, setFieldValue }) => (
+                    <Form>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 2,
+                          width: {
+                            sm: '100%',
+                            md: '60%',
+                          },
+                          mb: 4,
+                        }}
+                      >
+                        <TextField
+                          fullWidth
+                          name='streetName'
+                          label='Street Name'
+                          value={values.streetName}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.streetName && Boolean(errors.streetName)}
+                          helperText={touched.streetName && errors.streetName}
+                        />
+                        <TextField
+                          fullWidth
+                          name='city'
+                          label='City'
+                          value={values.city}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.city && Boolean(errors.city)}
+                          helperText={touched.city && errors.city}
+                        />
+                        <TextField
+                          fullWidth
+                          name='postalCode'
+                          label='Postal Code'
+                          value={values.postalCode}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.postalCode && Boolean(errors.postalCode)}
+                          helperText={touched.postalCode && errors.postalCode}
+                        />
+                        <FormControl fullWidth error={touched.country && Boolean(errors.country)}>
+                          <InputLabel id='country-label'>Country</InputLabel>
+                          <Select
+                            labelId='country-label'
+                            id='country'
+                            name='country'
+                            value={values.country}
+                            onChange={(event) => setFieldValue('country', event.target.value)}
+                            onBlur={handleBlur}
+                            label='Country'
+                          >
+                            {Object.entries(COUNTRIES_ENUM).map(([countryName, countryCode]) => (
+                              <MenuItem key={countryCode} value={countryCode}>
+                                {countryName}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {touched.country && errors.country && (
+                            <Typography variant='subtitle2' color='error' ml={2} mt={0.5} fontSize={'12px'}>
+                              {errors.country}
+                            </Typography>
+                          )}
+                        </FormControl>
+                        <Button
+                          variant='contained'
+                          color='primary'
+                          type='submit'
+                          sx={{ mt: 0 }}
+                          disabled={!dirty || isSubmitting}
+                        >
+                          Save Address
+                        </Button>
+                      </Box>
+                    </Form>
                   )}
-                </Box>
-                <Box sx={{ paddingLeft: 2 }}>
-                  <Typography variant='body1'>
-                    <strong>Street Name:</strong> {address.streetName || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>City:</strong> {address.city || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>State:</strong> {address.state || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>Country:</strong> {address.country || 'not indicated'}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
-        </Grid>
-
-        <Grid item xs={12}>
-          {billingAddresses?.map((address: Address, index) => (
-            <Card
-              key={address.id}
-              sx={{
-                marginBottom: 2,
-                backgroundColor: address.id === userProfile?.defaultBillingAddressId ? '#D0ECFE' : 'white',
-              }}
-            >
-              <CardContent>
-                <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
-                  <Typography variant='h6' component='div' gutterBottom>
-                    Billing Address {index + 1}
-                  </Typography>
-                  {address.id === userProfile?.defaultBillingAddressId && (
-                    <Chip label='Default Billing' color='primary' variant='outlined' sx={{ padding: 1 }} />
-                  )}
-                </Box>
-                <Box sx={{ paddingLeft: 2 }}>
-                  <Typography variant='body1'>
-                    <strong>Street Name:</strong> {address.streetName || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>City:</strong> {address.city || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>State:</strong> {address.state || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
-                  </Typography>
-                  <Typography variant='body1'>
-                    <strong>Country:</strong> {address.country || 'not indicated'}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          ))}
+                </Formik>
+              )}
+              {userProfile?.addresses.map((address, index) => (
+                <Card
+                  key={address.id}
+                  sx={{
+                    backgroundColor:
+                      address.id === userProfile.defaultShippingAddressId ||
+                      address.id === userProfile.defaultBillingAddressId
+                        ? '#D0ECFE'
+                        : 'white',
+                    marginBottom: 2,
+                  }}
+                >
+                  <CardContent>
+                    <Box display='flex' alignItems='center' justifyContent='space-between' gap={2}>
+                      <Typography variant='h6' component='div' gutterBottom>
+                        Address {index + 1}
+                      </Typography>
+                      <Box display='flex' alignItems='center' gap={1} flexWrap='wrap'>
+                        {address.id === userProfile.defaultShippingAddressId && (
+                          <Chip label='Default Shipping' color='primary' variant='outlined' />
+                        )}
+                        {address.id === userProfile.defaultBillingAddressId && (
+                          <Chip label='Default Billing' color='primary' variant='outlined' />
+                        )}
+                        <IconButton onClick={() => handleEditAddressToggle(address)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton onClick={() => handleDeleteAddress(address.id as string)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    <Box sx={{ paddingLeft: 2 }}>
+                      <Typography variant='body1'>
+                        <strong>Street Name:</strong> {address.streetName || 'not indicated'}
+                      </Typography>
+                      <Typography variant='body1'>
+                        <strong>City:</strong> {address.city || 'not indicated'}
+                      </Typography>
+                      <Typography variant='body1'>
+                        <strong>State:</strong> {address.state || 'not indicated'}
+                      </Typography>
+                      <Typography variant='body1'>
+                        <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
+                      </Typography>
+                      <Typography variant='body1'>
+                        <strong>Country:</strong> {address.country || 'not indicated'}
+                      </Typography>
+                    </Box>
+                    <Box display='flex' justifyContent='flex-end' gap={2} mt={2}>
+                      <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => handleSetDefaultShippingAddress(address.id as string)}
+                        disabled={address.id === userProfile.defaultShippingAddressId}
+                      >
+                        Set as Default Shipping
+                      </Button>
+                      <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => handleSetDefaultBillingAddress(address.id as string)}
+                        disabled={address.id === userProfile.defaultBillingAddressId}
+                      >
+                        Set as Default Billing
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+              <Snackbar
+                open={openAddressSnackbar}
+                autoHideDuration={4000}
+                onClose={handleCloseAddressSnackbar}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                {isAddressSnackbarError ? (
+                  <Alert onClose={handleCloseAddressSnackbar} severity='error' variant='filled'>
+                    {addressSnackbarMessage}
+                  </Alert>
+                ) : (
+                  <Alert onClose={handleCloseAddressSnackbar} severity='success' variant='filled'>
+                    {addressSnackbarMessage}
+                  </Alert>
+                )}
+              </Snackbar>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </Container>
