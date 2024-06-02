@@ -1,6 +1,6 @@
 import { CategoryOrderHints, CategoryReference } from './category';
 import { LocalizedString } from './common';
-import { ProductVariant, SearchKeywords } from './product';
+import { ProductCatalogData, ProductVariant, SearchKeywords } from "./product";
 import { ProductTypeReference } from './product-type';
 import { ReviewRatingStatistics } from './review';
 import { StateReference } from './state';
@@ -30,4 +30,5 @@ export interface ProductProjection {
   taxCategory?: TaxCategoryReference;
   variants: ProductVariant[];
   version: number;
+  masterData: ProductCatalogData;
 }
