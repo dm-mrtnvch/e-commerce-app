@@ -431,7 +431,8 @@ const UserPage = () => {
         key={address.id}
         sx={{
           backgroundColor:
-            address.id === userProfile?.defaultShippingAddressId || address.id === userProfile?.defaultBillingAddressId
+            (address.id === userProfile?.defaultShippingAddressId && type === 'shipping') ||
+            (address.id === userProfile?.defaultBillingAddressId && type === 'billing')
               ? '#D0ECFE'
               : 'white',
           marginBottom: 2,
@@ -587,10 +588,10 @@ const UserPage = () => {
                     flexWrap: 'wrap',
                   }}
                 >
-                  {address.id === userProfile?.defaultShippingAddressId && (
+                  {address.id === userProfile?.defaultShippingAddressId && type === 'shipping' && (
                     <Chip label='Default Shipping' color='primary' variant='outlined' />
                   )}
-                  {address.id === userProfile?.defaultBillingAddressId && (
+                  {address.id === userProfile?.defaultBillingAddressId && type === 'billing' && (
                     <Chip label='Default Billing' color='primary' variant='outlined' />
                   )}
                   <IconButton onClick={() => handleEditAddressToggle(address)}>
@@ -625,26 +626,29 @@ const UserPage = () => {
                   display: 'flex',
                   justifyContent: { xs: 'center', sm: 'flex-end' },
                   flexDirection: { xs: 'column', sm: 'row' },
-                  gap: { xs: 1, sm: 2 },
-                  mt: 1,
+                  mt: 2,
                 }}
               >
-                <Button
-                  variant='contained'
-                  color='primary'
-                  onClick={() => handleSetDefaultShippingAddress(address.id as string)}
-                  disabled={address.id === userProfile?.defaultShippingAddressId}
-                >
-                  Set as Default Shipping
-                </Button>
-                <Button
-                  variant='contained'
-                  color='primary'
-                  onClick={() => handleSetDefaultBillingAddress(address.id as string)}
-                  disabled={address.id === userProfile?.defaultBillingAddressId}
-                >
-                  Set as Default Billing
-                </Button>
+                {type === 'shipping' && (
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => handleSetDefaultShippingAddress(address.id as string)}
+                    disabled={address.id === userProfile?.defaultShippingAddressId}
+                  >
+                    Set as Default Shipping
+                  </Button>
+                )}
+                {type === 'billing' && (
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    onClick={() => handleSetDefaultBillingAddress(address.id as string)}
+                    disabled={address.id === userProfile?.defaultBillingAddressId}
+                  >
+                    Set as Default Billing
+                  </Button>
+                )}
               </Box>
             </>
           )}
