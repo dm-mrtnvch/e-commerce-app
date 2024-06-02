@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Container,
   FormControl,
   Grid,
@@ -426,7 +425,7 @@ const UserPage = () => {
   };
 
   const getCountryName = (countryCode: string) => {
-    const entry = Object.entries(COUNTRIES_ENUM).find(([_, code]) => code === countryCode);
+    const entry = Object.entries(COUNTRIES_ENUM).find(([, code]) => code === countryCode);
     return entry ? entry[0] : 'not indicated';
   };
 
@@ -441,6 +440,11 @@ const UserPage = () => {
               ? '#D0ECFE'
               : 'white',
           marginBottom: 2,
+          border:
+            (address.id === userProfile?.defaultShippingAddressId && type === 'shipping') ||
+            (address.id === userProfile?.defaultBillingAddressId && type === 'billing')
+              ? '1px solid #73BAFB'
+              : 'none',
         }}
       >
         <CardContent>
@@ -692,16 +696,24 @@ const UserPage = () => {
       ]
     : [];
 
-  if (isLoading) {
-    return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
-        <CircularProgress size={45} />
-      </Box>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
+  //       <CircularProgress size={45} />
+  //     </Box>
+  //   );
+  // }
 
   return (
     <Container maxWidth='md' sx={{ padding: 2 }}>
+      <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
+        <Typography variant='h3' component='h1' gutterBottom>
+          User Profile
+        </Typography>
+        <Typography variant='subtitle1' color='textSecondary'>
+          Manage your personal information 📝, passwords 🔑 and addresses 🏡.
+        </Typography>
+      </Box>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Card>
