@@ -85,7 +85,7 @@ const UserPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
-  const { data: userProfile, isLoading, refetch } = useGetUserProfileQuery();
+  const { data: userProfile, refetch } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
   const [changePassword] = useChangePasswordMutation();
   const [login] = useLoginMutation();
