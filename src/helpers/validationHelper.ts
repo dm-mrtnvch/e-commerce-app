@@ -108,3 +108,21 @@ export const changePasswordSchema = object().shape({
     .required('Please confirm your new password')
     .oneOf([ref('newPassword')], 'Passwords must match'),
 });
+
+export const addressChangeSchema = object().shape({
+  streetName: string().required('Street address is required'),
+  city: string()
+    .matches(/^[a-zA-Z\s]+$/, 'City cannot contain special characters or numbers')
+    .required('City is required'),
+  postalCode: string()
+    .required('Postal code is required')
+    .test('isValidPostalCode', 'Invalid postal code format for the selected country', function (value) {
+      const country: Country = this.parent.country;
+      if (country && postalCodeRegex[country]) {
+        return postalCodeRegex[country].test(value || '');
+      }
+      return true;
+    }),
+  country: string().oneOf(Object.values(COUNTRIES_ENUM), 'Invalid country').required('Country is required'),
+  addressType: string().required('required'),
+});
