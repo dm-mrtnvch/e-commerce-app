@@ -425,6 +425,11 @@ const UserPage = () => {
     }
   };
 
+  const getCountryName = (countryCode: string) => {
+    const entry = Object.entries(COUNTRIES_ENUM).find(([_, code]) => code === countryCode);
+    return entry ? entry[0] : 'not indicated';
+  };
+
   const renderAddressCards = (addresses: Address[], type: 'shipping' | 'billing') => {
     return addresses.map((address, index) => (
       <Card
@@ -609,16 +614,17 @@ const UserPage = () => {
                 }}
               >
                 <Typography variant='body1'>
-                  <strong>Street Name:</strong> {address.streetName || 'not indicated'}
+                  <strong>Street Name:</strong> {address.streetName}
                 </Typography>
                 <Typography variant='body1'>
-                  <strong>City:</strong> {address.city || 'not indicated'}
+                  <strong>City:</strong> {address.city}
                 </Typography>
                 <Typography variant='body1'>
-                  <strong>Postal Code:</strong> {address.postalCode || 'not indicated'}
+                  <strong>Postal Code:</strong> {address.postalCode}
                 </Typography>
                 <Typography variant='body1'>
-                  <strong>Country:</strong> {address.country || 'not indicated'}
+                  <strong>Country: </strong>
+                  {getCountryName(address.country)}
                 </Typography>
               </Box>
               <Box
