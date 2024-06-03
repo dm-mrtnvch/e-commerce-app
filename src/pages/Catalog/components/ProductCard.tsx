@@ -1,6 +1,6 @@
 import { Card, CardContent, CardMedia, Chip, Skeleton, styled, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ProductProjection } from '../../../types/product-projection';
 import { CATALOG } from '../../../routes/routes';
 
@@ -38,6 +38,7 @@ const StyledChip = styled(Chip)(({ theme }) => ({
 }));
 
 const ProductCard = ({ product, loading }: Props) => {
+  const { categoryKey } = useParams();
   const navigate = useNavigate();
   const [image, setImage] = useState<string | undefined>(undefined);
 
@@ -64,7 +65,7 @@ const ProductCard = ({ product, loading }: Props) => {
 
   const handleClick = () => {
     if (product) {
-      navigate(`${CATALOG.path}/details/${product.key}` ?? '');
+      navigate(`${CATALOG.path}/details/${product.key}` ?? '', { state: { categoryKey: categoryKey ?? '' } });
     }
   };
 
