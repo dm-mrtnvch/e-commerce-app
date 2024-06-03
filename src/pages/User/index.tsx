@@ -85,7 +85,7 @@ const UserPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
-  const { data: userProfile, refetch } = useGetUserProfileQuery();
+  const { data: userProfile, refetch, isLoading } = useGetUserProfileQuery();
   const [updateUserProfile] = useUpdateUserProfileMutation();
   const [changePassword] = useChangePasswordMutation();
   const [login] = useLoginMutation();
@@ -696,13 +696,9 @@ const UserPage = () => {
       ]
     : [];
 
-  // if (isLoading) {
-  //   return (
-  //     <Box display='flex' justifyContent='center' alignItems='center' minHeight='100vh'>
-  //       <CircularProgress size={45} />
-  //     </Box>
-  //   );
-  // }
+  if (isLoading) {
+    return <div style={{ position: 'absolute', top: '50%', left: '50%' }}>Loading...</div>;
+  }
 
   return (
     <Container maxWidth='md' sx={{ padding: 2 }}>

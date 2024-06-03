@@ -93,11 +93,14 @@ const ProductCard = ({ product, loading }: Props) => {
           <Typography variant='h6' sx={{ display: 'flex', gap: 1 }}>
             {price?.discounted ? (
               <Typography component='span' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
-                ${price?.value?.centAmount / 100}
+                ${((price?.value?.centAmount ?? 0) / 100).toFixed(2)}
               </Typography>
             ) : null}
             <Typography component='span'>
-              ${price?.discounted ? price?.discounted?.value?.centAmount / 100 : price?.value?.centAmount ?? 0 / 100}
+              $
+              {price?.discounted
+                ? ((price.discounted.value.centAmount ?? 0) / 100).toFixed(2)
+                : ((price?.value?.centAmount ?? 0) / 100).toFixed(2)}
             </Typography>
           </Typography>
         </StyledCardContent>

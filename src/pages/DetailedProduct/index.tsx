@@ -1,68 +1,29 @@
+import { useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { Container, Typography, Box, Grid, Stack } from '@mui/material';
-import Slider from 'react-slick';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { useGetProductByKeyQuery } from '../../redux/services/products.ts';
+import { Container, Typography, Box, Grid, Stack, Dialog, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import Breadcrumbs from '../Catalog/components/Breadcrumbs.tsx';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import { MouseEventHandler } from 'react';
 import { PAGE_404 } from '../../routes/routes.tsx';
-
-function NextArrow({ onClick }: { onClick?: MouseEventHandler<HTMLDivElement> }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        position: 'absolute',
-        right: '10px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        cursor: 'pointer',
-        zIndex: 1,
-      }}
-    >
-      <ArrowForwardIosIcon style={{ color: 'gray' }} />
-    </div>
-  );
-}
-
-function PrevArrow({ onClick }: { onClick?: MouseEventHandler<HTMLDivElement> }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        position: 'absolute',
-        left: '10px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        cursor: 'pointer',
-        zIndex: 1,
-      }}
-    >
-      <ArrowBackIosNewIcon style={{ color: 'gray' }} />
-    </div>
-  );
-}
-
-const settings = {
-  dots: true,
-  infinite: true,
-  speed: 500,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  nextArrow: <NextArrow />,
-  prevArrow: <PrevArrow />,
-  adaptiveHeight: true,
-};
+import { useGetProductByKeyQuery } from '../../redux/services/products.ts';
+import ImageSlider from './components/ImageSlider.tsx';
 
 const DetailedProduct = () => {
   const { key = '' } = useParams();
   const { data: product, isFetching, error } = useGetProductByKeyQuery(key);
+  const [open, setOpen] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const handleOpen = (index: number) => {
+    setActiveSlide(index);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   if (isFetching) {
-    return <div>Loading...</div>;
+    return <div style={{ position: 'absolute', top: '50%', left: '50%' }}>Loading...</div>;
   }
 
   if (!product || error) {
@@ -70,7 +31,7 @@ const DetailedProduct = () => {
   }
 
   const { name, description, masterVariant } = product.masterData.current;
-  const images = masterVariant.images;
+  const images = masterVariant.images || [];
   const price = masterVariant?.prices?.[0];
   const regularPrice = (price?.value.centAmount ?? 0) / 100;
   const discountedPrice = price?.discounted ? (price.discounted.value.centAmount ?? 0) / 100 : null;
@@ -81,18 +42,7 @@ const DetailedProduct = () => {
       <Grid container spacing={4} alignItems='center' sx={{ mt: 2 }}>
         <Grid item xs={12} md={6}>
           <Box sx={{ width: '100%', overflow: 'hidden', position: 'relative' }}>
-            <Slider {...settings}>
-              {images?.length &&
-                images.map((image, index) => (
-                  <Box
-                    key={index}
-                    component='img'
-                    sx={{ width: '100%', height: 400, objectFit: 'contain' }}
-                    src={image.url}
-                    alt={`Product Image ${index}`}
-                  />
-                ))}
-            </Slider>
+            <ImageSlider images={images} onImageClick={handleOpen} />
           </Box>
         </Grid>
         <Grid item xs={12} md={6}>
@@ -120,6 +70,22 @@ const DetailedProduct = () => {
           </Typography>
         </Grid>
       </Grid>
+      <Dialog fullScreen open={open} onClose={handleClose}>
+        <IconButton
+          aria-label='close'
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 16,
+            top: 16,
+            zIndex: 2,
+            color: 'black',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <ImageSlider images={images} initialSlide={activeSlide} fullScreen />
+      </Dialog>
     </Container>
   );
 };
