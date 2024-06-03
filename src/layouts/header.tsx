@@ -26,7 +26,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { resetClientCredentials } from '../redux/features/authSlice';
 import { useGetUserProfileQuery } from '../redux/services/me';
 import { HOME, LOGIN, USER } from '../routes/routes';
-import navConfig from './config-navigation';
+import { authNavConfig, navConfig } from './config-navigation';
 import styles from './header.module.scss';
 
 interface Props {
@@ -106,7 +106,7 @@ const Header = ({ headerHeight }: Props) => {
               {navItem.title}
             </NavLink>
           ))}
-          {clientCredentials && (
+          {clientCredentials ? (
             <>
               <Button
                 disableElevation
@@ -149,6 +149,16 @@ const Header = ({ headerHeight }: Props) => {
                 </MenuItem>
               </Menu>
             </>
+          ) : (
+            authNavConfig.map((navItem) => (
+              <NavLink
+                key={navItem.title}
+                to={navItem.path}
+                className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
+              >
+                {navItem.title}
+              </NavLink>
+            ))
           )}
         </Stack>
       );
@@ -181,10 +191,23 @@ const Header = ({ headerHeight }: Props) => {
           </ListItemButton>
         )}
         <Divider />
-        {clientCredentials && (
+        {clientCredentials ? (
           <ListItemButton onClick={onLogout} className={styles.drawerLink}>
             Logout
           </ListItemButton>
+        ) : (
+          authNavConfig.map((navItem) => (
+            <ListItemButton
+              key={navItem.title}
+              component={NavLink}
+              to={navItem.path}
+              className={styles.drawerLink}
+              onClick={() => setDrawerOpen(false)}
+            >
+              <ListItemIcon>{navItem.icon}</ListItemIcon>
+              {navItem.title}
+            </ListItemButton>
+          ))
         )}
       </List>
     );
