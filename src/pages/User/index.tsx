@@ -430,6 +430,14 @@ const UserPage = () => {
   };
 
   const renderAddressCards = (addresses: Address[], type: 'shipping' | 'billing') => {
+    if (addresses.length === 0) {
+      return (
+        <Typography variant='body2' color='textSecondary' gutterBottom>
+          No {type} addresses available.
+        </Typography>
+      );
+    }
+
     return addresses.map((address, index) => (
       <Card
         key={address.id}
