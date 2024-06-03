@@ -4,6 +4,7 @@ import { Link as RouterLink, useParams } from 'react-router-dom';
 import { useGetCategoriesQuery } from '../../../redux/services/category';
 import { CATALOG } from '../../../routes/routes';
 import { Category } from '../../../types/category';
+import { useGetProductByKeyQuery } from '../../../redux/services/products';
 
 function getBreadcrumbs(categories: Category[], activeCategoryId: string): Category[] {
   const breadcrumbs: Category[] = [];
@@ -21,14 +22,21 @@ function getBreadcrumbs(categories: Category[], activeCategoryId: string): Categ
   return breadcrumbs;
 }
 
-const Breadcrumbs = () => {
+interface Props {
+  categoryId?: string;
+  productKey?: string;
+  detailedPage?: boolean;
+}
+
+const Breadcrumbs = ({ categoryId, productKey, detailedPage = false }: Props) => {
   const { categoryKey } = useParams();
   const { data, isLoading, isFetching } = useGetCategoriesQuery();
-  const breadcrumbs = getBreadcrumbs(data?.results ?? [], categoryKey ?? '');
+  const { data: product, isFetching: isFetchingProduct } = useGetProductByKeyQuery(productKey ?? '');
+  const breadcrumbs = getBreadcrumbs(data?.results ?? [], categoryKey ?? categoryId ?? '');
 
   return (
     <MuiBreadcrumbs separator='-'>
-      {categoryKey ? (
+      {categoryKey || detailedPage ? (
         <Link
           underline='hover'
           color='inherit'
@@ -68,6 +76,13 @@ const Breadcrumbs = () => {
               Loading...
             </Typography>
           ))}
+      {productKey &&
+        detailedPage &&
+        (!isFetchingProduct ? (
+          <Typography color='text.primary'>{product?.masterData.current.name['en-US']}</Typography>
+        ) : (
+          <Typography color='text.primary'>Loading...</Typography>
+        ))}
     </MuiBreadcrumbs>
   );
 };
