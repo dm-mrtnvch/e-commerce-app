@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Logout, Menu as MenuIcon, Person2 } from '@mui/icons-material';
+import { KeyboardArrowDown, Logout, Menu as MenuIcon, Person2 } from '@mui/icons-material';
 import {
   AppBar,
   Avatar,
   Box,
+  Button,
   Chip,
   Divider,
   Drawer,
@@ -13,15 +13,18 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
+  Skeleton,
   Stack,
   Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { resetClientCredentials } from '../redux/features/authSlice';
+import { useGetUserProfileQuery } from '../redux/services/me';
 import { HOME, LOGIN, USER } from '../routes/routes';
 import navConfig from './config-navigation';
 import styles from './header.module.scss';
@@ -45,6 +48,7 @@ const Header = ({ headerHeight }: Props) => {
   const isMenuOpen = Boolean(anchorEl);
 
   const { clientCredentials } = useAppSelector((state) => state.auth);
+  const { data: userProfile, isLoading } = useGetUserProfileQuery();
 
   useEffect(() => {
     const handleResize = () => {
@@ -104,16 +108,30 @@ const Header = ({ headerHeight }: Props) => {
           ))}
           {clientCredentials && (
             <>
-              <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-                <Avatar />
-              </IconButton>
+              <Button
+                disableElevation
+                variant='contained'
+                disabled={isLoading}
+                onClick={handleMenuOpen}
+                endIcon={<KeyboardArrowDown />}
+                startIcon={
+                  <Avatar sx={{ width: 24, height: 24, fontSize: '12px', bgcolor: 'primary.dark' }}>
+                    {userProfile?.firstName?.charAt(0) ?? ''}
+                  </Avatar>
+                }
+              >
+                {isLoading ? (
+                  <Skeleton variant='text' width={100} />
+                ) : (
+                  `${userProfile?.firstName ?? ''} ${userProfile?.lastName ?? ''}`
+                )}
+              </Button>
               <Menu
                 anchorEl={anchorEl}
                 open={isMenuOpen}
                 onClose={handleMenuClose}
-                sx={{ mt: '45px' }}
                 anchorOrigin={{
-                  vertical: 'top',
+                  vertical: 'bottom',
                   horizontal: 'right',
                 }}
                 transformOrigin={{
