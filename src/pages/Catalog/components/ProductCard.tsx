@@ -37,6 +37,16 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   borderRadius: theme.spacing(1.25),
 }));
 
+const StyledShortDescription = styled(Typography)(() => ({
+  display: '-webkit-box',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 3,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  marginBottom: '2rem',
+  color: '#695d5d',
+}));
+
 const ProductCard = ({ product, loading }: Props) => {
   const { categoryKey } = useParams();
   const navigate = useNavigate();
@@ -91,19 +101,24 @@ const ProductCard = ({ product, loading }: Props) => {
           <Typography gutterBottom variant='subtitle1'>
             {name}
           </Typography>
-          <Typography variant='h6' sx={{ display: 'flex', gap: 1 }}>
-            {price?.discounted ? (
-              <Typography component='span' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
-                ${((price?.value?.centAmount ?? 0) / 100).toFixed(2)}
+          <StyledShortDescription variant='caption'>
+            {product?.description?.['en-US'] || 'No description available'}
+          </StyledShortDescription>
+          <div style={{ position: 'absolute', bottom: '1rem' }}>
+            <Typography variant='h6' sx={{ display: 'flex', gap: 1 }}>
+              {price?.discounted ? (
+                <Typography component='span' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
+                  ${((price?.value?.centAmount ?? 0) / 100).toFixed(2)}
+                </Typography>
+              ) : null}
+              <Typography component='span'>
+                $
+                {price?.discounted
+                  ? ((price.discounted.value.centAmount ?? 0) / 100).toFixed(2)
+                  : ((price?.value?.centAmount ?? 0) / 100).toFixed(2)}
               </Typography>
-            ) : null}
-            <Typography component='span'>
-              $
-              {price?.discounted
-                ? ((price.discounted.value.centAmount ?? 0) / 100).toFixed(2)
-                : ((price?.value?.centAmount ?? 0) / 100).toFixed(2)}
             </Typography>
-          </Typography>
+          </div>
         </StyledCardContent>
       </StyledCard>
     );
