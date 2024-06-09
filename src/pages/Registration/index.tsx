@@ -10,13 +10,13 @@ import styles from './styles.module.scss';
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
-  const { credentials } = useAppSelector((state) => state.auth);
+  const { clientCredentials } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    if (credentials) {
+    if (clientCredentials) {
       navigate(HOME.path, { replace: true });
     }
-  }, [credentials, navigate]);
+  }, [clientCredentials, navigate]);
 
   return (
     <Page title={REGISTRATION.title} className={styles.registration}>

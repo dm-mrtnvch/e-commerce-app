@@ -6,7 +6,7 @@ import { SyntheticEvent, useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { loginFormValidationSchema } from '../../../helpers/validationHelper';
 import { useAppDispatch } from '../../../hooks/reduxHooks';
-import { setCredentials } from '../../../redux/features/authSlice';
+import { setClientCredentials } from '../../../redux/features/authSlice';
 import { useLoginMutation } from '../../../redux/services/auth';
 import { HOME, REGISTRATION } from '../../../routes/routes';
 import { ErrorResponse } from '../../../types/common';
@@ -32,7 +32,7 @@ const LoginForm = () => {
       })
         .unwrap()
         .then((response) => {
-          dispatch(setCredentials(response));
+          dispatch(setClientCredentials(response));
           navigate(HOME.path);
         })
         .catch((error) => {
