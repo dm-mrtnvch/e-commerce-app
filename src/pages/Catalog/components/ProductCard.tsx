@@ -1,8 +1,9 @@
-import { Card, CardContent, CardMedia, Chip, Skeleton, styled, Typography } from '@mui/material';
+import { Card, CardContent, CardMedia, Chip, IconButton, Skeleton, styled, Tooltip, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ProductProjection } from '../../../types/product-projection';
 import { CATALOG } from '../../../routes/routes';
+import { ProductProjection } from '../../../types/product-projection';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 interface Props {
   loading?: boolean;
@@ -13,10 +14,17 @@ const StyledCard = styled(Card)(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.spacing(2),
   height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+
   '&:hover': {
     cursor: 'pointer',
     boxShadow: theme.shadows[4],
     transition: 'box-shadow 0.3s',
+
+    '& > .MuiIconButton-root': {
+      opacity: 1,
+    },
   },
 }));
 
@@ -27,7 +35,10 @@ const StyledCardMedia = styled(CardMedia)(({ theme }) => ({
 })) as typeof CardMedia;
 
 const StyledCardContent = styled(CardContent)(({ theme }) => ({
-  padding: theme.spacing(2, 3, 3),
+  padding: theme.spacing(2, 3, 2),
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
 }));
 
 const StyledChip = styled(Chip)(({ theme }) => ({
@@ -37,14 +48,29 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   borderRadius: theme.spacing(1.25),
 }));
 
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(26),
+  right: theme.spacing(2),
+  opacity: 0,
+  backgroundColor: 'var(--mui-palette-primary-main)',
+  color: 'var(--mui-palette-primary-contrastText)',
+  transition: theme.transitions.create(['opacity', 'backgroundColor'], {
+    duration: theme.transitions.duration.short,
+  }),
+  '&:hover': {
+    backgroundColor: 'var(--mui-palette-primary-dark)',
+  },
+}));
+
 const StyledShortDescription = styled(Typography)(() => ({
   display: '-webkit-box',
   WebkitBoxOrient: 'vertical',
   WebkitLineClamp: 3,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  marginBottom: '2rem',
-  color: '#695d5d',
+  marginBottom: '1rem',
+  color: 'var(--mui-palette-text-secondary)',
 }));
 
 const ProductCard = ({ product, loading }: Props) => {
@@ -97,6 +123,18 @@ const ProductCard = ({ product, loading }: Props) => {
       <StyledCard onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleClick}>
         {price?.discounted && <StyledChip label='Sale' color='primary' />}
         <StyledCardMedia component='div' image={image} title={name} />
+        <Tooltip arrow title='Add to card'>
+          <StyledIconButton
+            size='large'
+            onClick={(e) => {
+              e.stopPropagation();
+              // TODO: Add to cart logic
+            }}
+            // TODO: Disable button if product is already in cart
+          >
+            <AddShoppingCartIcon />
+          </StyledIconButton>
+        </Tooltip>
         <StyledCardContent>
           <Typography gutterBottom variant='subtitle1'>
             {name}
@@ -104,7 +142,7 @@ const ProductCard = ({ product, loading }: Props) => {
           <StyledShortDescription variant='caption'>
             {product?.description?.['en-US'] || 'No description available'}
           </StyledShortDescription>
-          <div style={{ position: 'absolute', bottom: '1rem' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end' }}>
             <Typography variant='h6' sx={{ display: 'flex', gap: 1 }}>
               {price?.discounted ? (
                 <Typography component='span' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
