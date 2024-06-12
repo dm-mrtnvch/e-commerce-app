@@ -165,3 +165,9 @@ export interface CustomTokenizer {
 export interface WhitespaceTokenizer {
   type: 'whitespace';
 }
+
+export interface ProductReference {
+  id: string;
+  obj?: Product;
+  typeId: string;
+}
