@@ -68,7 +68,19 @@ const Catalog = () => {
           <Grid item xs={12}>
             <Breadcrumbs />
           </Grid>
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: 'flex',
+              flexDirection: {
+                sm: 'row',
+                xs: 'column',
+              },
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
             <Search searchText={searchText} setSearchText={setSearchText} />
 
             <Stack direction='row' gap={1}>
