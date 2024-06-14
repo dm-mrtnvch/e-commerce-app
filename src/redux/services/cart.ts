@@ -6,8 +6,8 @@ import { RootState } from '../store';
 const API_BASE_URL = import.meta.env.VITE_HOST;
 const PROJECT_KEY = import.meta.env.VITE_PROJECT_KEY;
 
-export const cardApi = createApi({
-  reducerPath: 'cardApi',
+export const cartApi = createApi({
+  reducerPath: 'cartApi',
   tagTypes: ['Cart'],
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/${PROJECT_KEY}`,
@@ -46,4 +46,4 @@ export const cardApi = createApi({
   }),
 });
 
-export const { useGetUserCartQuery, useLazyGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } = cardApi;
+export const { useGetUserCartQuery, useLazyGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } = cartApi;
