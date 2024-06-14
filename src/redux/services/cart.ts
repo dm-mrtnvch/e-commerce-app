@@ -13,8 +13,9 @@ export const cartApi = createApi({
     baseUrl: `${API_BASE_URL}/${PROJECT_KEY}`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.clientCredentials?.access_token;
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+      const anonymousToken = (getState() as RootState).auth.anonymousCredentials?.access_token;
+      if (token || anonymousToken) {
+        headers.set('Authorization', `Bearer ${token ?? anonymousToken}`);
       }
       headers.set('Content-Type', 'application/json');
       return headers;

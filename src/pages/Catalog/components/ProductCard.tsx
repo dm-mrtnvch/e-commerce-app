@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useCreateCartMutation, useGetUserCartQuery, useUpdateCartMutation } from '../../../redux/services/card';
+import { useCreateCartMutation, useGetUserCartQuery, useUpdateCartMutation } from '../../../redux/services/cart';
 import { CATALOG } from '../../../routes/routes';
 import { Cart } from '../../../types/cart';
 import { ProductProjection } from '../../../types/product-projection';
