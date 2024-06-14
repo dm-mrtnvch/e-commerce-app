@@ -427,7 +427,7 @@ export interface ShippingDraft {
 export type CartUpdateAction = CartAddLineItemAction;
 
 interface CartAddLineItemAction {
-  action: 'addLineItem';
+  action: 'addLineItem' | 'removeLineItem';
   addedAt?: string;
   custom?: CustomFieldsDraft;
   distributionChannel?: ChannelResourceIdentifier;
@@ -443,4 +443,5 @@ interface CartAddLineItemAction {
   sku?: string;
   supplyChannel?: ChannelResourceIdentifier;
   variantId?: number;
+  lineItemId?: string;
 }
