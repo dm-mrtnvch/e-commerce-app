@@ -8,7 +8,7 @@ import { PAGE_404 } from '../../routes/routes.tsx';
 import Page from '../../components/Page.tsx';
 import Breadcrumbs from '../Catalog/components/Breadcrumbs.tsx';
 import ImageSlider from './components/ImageSlider.tsx';
-import { useGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } from '../../redux/services/card';
+import { useGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } from '../../redux/services/cart';
 import { useGetProductByKeyQuery } from '../../redux/services/products.ts';
 import { CartUpdateAction } from '../../types/cart';
 
