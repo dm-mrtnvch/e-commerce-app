@@ -3,6 +3,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
   Alert,
+  Button,
   IconButton,
   Paper,
   Skeleton,
@@ -21,6 +22,8 @@ import placeholderImage from '../../../assets/images/no-image.webp';
 import { useUpdateCartMutation } from '../../../redux/services/cart';
 import { Pagination } from '../../../types/common';
 import { Cart } from '../../../types/cart';
+import { Link } from 'react-router-dom';
+import { CATALOG } from '../../../routes/routes';
 
 interface Props {
   userCart: Pagination<Cart> | undefined;
@@ -180,9 +183,14 @@ const LineItemsTable = ({ userCart, isLoading, refetch }: Props) => {
             {lineItems?.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5}>
-                  <Typography variant='body1' align='center'>
-                    Your cart is empty
-                  </Typography>
+                  <Stack direction='column' spacing={1} sx={{ alignItems: 'center' }}>
+                    <Typography variant='h6' align='center' gutterBottom>
+                      Your cart is empty
+                    </Typography>
+                    <Button variant='contained' color='primary' size='small' component={Link} to={CATALOG.path}>
+                      Continue Shopping
+                    </Button>
+                  </Stack>
                 </TableCell>
               </TableRow>
             )}
