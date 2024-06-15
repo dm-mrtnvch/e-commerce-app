@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveIcon from '@mui/icons-material/Remove';
-import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
 import {
   Alert,
   IconButton,
@@ -18,9 +18,17 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import placeholderImage from '../../../assets/images/no-image.webp';
-import { useGetUserCartQuery, useUpdateCartMutation } from '../../../redux/services/cart';
+import { useUpdateCartMutation } from '../../../redux/services/cart';
+import { Pagination } from '../../../types/common';
+import { Cart } from '../../../types/cart';
 
-const LineItemsTable = () => {
+interface Props {
+  userCart: Pagination<Cart> | undefined;
+  isLoading?: boolean;
+  refetch: () => void;
+}
+
+const LineItemsTable = ({ userCart, isLoading, refetch }: Props) => {
   const [snackbarState, setSnackbarState] = useState<{
     open: boolean;
     message: string;
@@ -32,7 +40,6 @@ const LineItemsTable = () => {
   });
 
   const [updateCart, { isLoading: isUpdating }] = useUpdateCartMutation();
-  const { data: userCart, isLoading, refetch } = useGetUserCartQuery();
   const lineItems = userCart?.results?.[0]?.lineItems;
 
   const handleRemoveFromCart = async (lineItemId: string) => {
@@ -165,7 +172,7 @@ const LineItemsTable = () => {
                     disabled={isUpdating || isLoading}
                     onClick={() => handleRemoveFromCart(lineItem.id)}
                   >
-                    <RemoveShoppingCartIcon />
+                    <DeleteIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -184,7 +191,7 @@ const LineItemsTable = () => {
                 <TableRow key={index}>
                   <TableCell>
                     <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-                      <Skeleton variant='rectangular' width={64} height={64} />
+                      <Skeleton variant='rounded' width={64} height={64} sx={{ borderRadius: '16px' }} />
                       <Skeleton variant='text' width={200} />
                     </Stack>
                   </TableCell>
