@@ -6,15 +6,16 @@ import { RootState } from '../store';
 const API_BASE_URL = import.meta.env.VITE_HOST;
 const PROJECT_KEY = import.meta.env.VITE_PROJECT_KEY;
 
-export const cardApi = createApi({
-  reducerPath: 'cardApi',
+export const cartApi = createApi({
+  reducerPath: 'cartApi',
   tagTypes: ['Cart'],
   baseQuery: fetchBaseQuery({
     baseUrl: `${API_BASE_URL}/${PROJECT_KEY}`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.clientCredentials?.access_token;
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+      const anonymousToken = (getState() as RootState).auth.anonymousCredentials?.access_token;
+      if (token || anonymousToken) {
+        headers.set('Authorization', `Bearer ${token ?? anonymousToken}`);
       }
       headers.set('Content-Type', 'application/json');
       return headers;
@@ -46,4 +47,4 @@ export const cardApi = createApi({
   }),
 });
 
-export const { useGetUserCartQuery, useLazyGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } = cardApi;
+export const { useGetUserCartQuery, useLazyGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } = cartApi;

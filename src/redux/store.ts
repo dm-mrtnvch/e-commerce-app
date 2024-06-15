@@ -1,7 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authReducer from './features/authSlice';
 import { authApi } from './services/auth';
-import { cardApi } from './services/card.ts';
+import { cartApi } from './services/cart';
 import { categoryApi } from './services/category.ts';
 import { meApi } from './services/me.ts';
 import { productProjectionsApi } from './services/product-projections';
@@ -10,7 +10,7 @@ import { productsApi } from './services/products';
 
 const rootReducer = combineReducers({
   [authApi.reducerPath]: authApi.reducer,
-  [cardApi.reducerPath]: cardApi.reducer,
+  [cartApi.reducerPath]: cartApi.reducer,
   [categoryApi.reducerPath]: categoryApi.reducer,
   [meApi.reducerPath]: meApi.reducer,
   [productProjectionsApi.reducerPath]: productProjectionsApi.reducer,
@@ -25,7 +25,7 @@ export const setupStore = () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
         authApi.middleware,
-        cardApi.middleware,
+        cartApi.middleware,
         categoryApi.middleware,
         meApi.middleware,
         productProjectionsApi.middleware,

@@ -20,6 +20,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
@@ -48,7 +49,7 @@ const Header = ({ headerHeight }: Props) => {
   const isMenuOpen = Boolean(anchorEl);
 
   const { clientCredentials } = useAppSelector((state) => state.auth);
-  const { data: userProfile, isLoading } = useGetUserProfileQuery();
+  const { data: userProfile, isLoading, isError, error } = useGetUserProfileQuery();
 
   useEffect(() => {
     const handleResize = () => {
@@ -63,6 +64,12 @@ const Header = ({ headerHeight }: Props) => {
       window.removeEventListener('resize', handleResize);
     };
   }, [mdUp]);
+
+  useEffect(() => {
+    if (isError && (error as FetchBaseQueryError)?.status === 401) {
+      dispatch(resetClientCredentials());
+    }
+  }, [isError, error, dispatch]);
 
   const onLogout = () => {
     dispatch(resetClientCredentials());
