@@ -44,7 +44,21 @@ export const cartApi = createApi({
       }),
       invalidatesTags: ['Cart'],
     }),
+    deleteCart: builder.mutation<void, { id: string; version: number }>({
+      query: ({ id, version }) => ({
+        url: `/me/carts/${id}`,
+        method: 'DELETE',
+        params: { version },
+      }),
+      invalidatesTags: ['Cart'],
+    }),
   }),
 });
 
-export const { useGetUserCartQuery, useLazyGetUserCartQuery, useCreateCartMutation, useUpdateCartMutation } = cartApi;
+export const {
+  useGetUserCartQuery,
+  useLazyGetUserCartQuery,
+  useCreateCartMutation,
+  useUpdateCartMutation,
+  useDeleteCartMutation,
+} = cartApi;

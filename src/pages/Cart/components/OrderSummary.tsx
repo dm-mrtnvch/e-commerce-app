@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
   Paper,
@@ -12,10 +11,10 @@ import {
   TableRow,
   TextField,
 } from '@mui/material';
+import { Dispatch, useState } from 'react';
 import { useUpdateCartMutation } from '../../../redux/services/cart';
 import { Cart } from '../../../types/cart';
 import { Pagination } from '../../../types/common';
-import { Dispatch, useState } from 'react';
 
 interface Props {
   userCart: Pagination<Cart> | undefined;
@@ -40,7 +39,8 @@ const OrderSummary = ({ userCart, isLoading, refetch, snackbarState, setSnackbar
   const [updateCart, { isLoading: isUpdating }] = useUpdateCartMutation();
 
   const lineItems = userCart?.results?.[0]?.lineItems;
-  const subtotal = lineItems?.reduce((acc, item) => acc + (item.price.value.centAmount * item?.quantity ?? 0) / 100, 0);
+  const subtotal =
+    lineItems?.reduce((acc, item) => acc + (item.price.value.centAmount * item?.quantity ?? 0) / 100, 0) ?? 0;
   const discount =
     (lineItems?.reduce(
       (acc, item) =>
