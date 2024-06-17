@@ -28,6 +28,7 @@ import { useDeleteCartMutation, useUpdateCartMutation } from '../../../redux/ser
 import { CATALOG } from '../../../routes/routes';
 import { Cart } from '../../../types/cart';
 import { Pagination } from '../../../types/common';
+import { Severity } from '../index.tsx';
 
 interface Props {
   userCart: Pagination<Cart> | undefined;
@@ -36,13 +37,13 @@ interface Props {
   snackbarState: {
     open: boolean;
     message: string;
-    severity: 'success' | 'error' | 'warning' | 'info';
+    severity: Severity;
   };
   setSnackbarState: Dispatch<
     React.SetStateAction<{
       open: boolean;
       message: string;
-      severity: 'success' | 'error' | 'warning' | 'info';
+      severity: Severity;
     }>
   >;
 }
