@@ -28,6 +28,7 @@ import { useDeleteCartMutation, useUpdateCartMutation } from '../../../redux/ser
 import { CATALOG } from '../../../routes/routes';
 import { Cart } from '../../../types/cart';
 import { Pagination } from '../../../types/common';
+import { Severity } from '../index.tsx';
 
 interface Props {
   userCart: Pagination<Cart> | undefined;
@@ -36,13 +37,13 @@ interface Props {
   snackbarState: {
     open: boolean;
     message: string;
-    severity: 'success' | 'error' | 'warning' | 'info';
+    severity: Severity;
   };
   setSnackbarState: Dispatch<
     React.SetStateAction<{
       open: boolean;
       message: string;
-      severity: 'success' | 'error' | 'warning' | 'info';
+      severity: Severity;
     }>
   >;
 }
@@ -167,11 +168,11 @@ const LineItemsTable = ({ userCart, isLoading, refetch, snackbarState, setSnackb
                 </TableCell>
                 <TableCell>
                   <Stack direction='column' spacing={1}>
-                    {lineItem?.price?.discounted ? (
+                    {lineItem?.price?.discounted && (
                       <Typography fontSize='inherit' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
-                        ${((lineItem?.price?.value?.centAmount ?? 0) / 100).toFixed(2)}
+                        {((lineItem?.price?.value?.centAmount ?? 0) / 100).toFixed(2)}
                       </Typography>
-                    ) : null}
+                    )}
                     $
                     {lineItem?.price?.discounted
                       ? ((lineItem?.price.discounted.value.centAmount ?? 0) / 100).toFixed(2)

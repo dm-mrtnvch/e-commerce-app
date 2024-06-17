@@ -6,11 +6,13 @@ import { CART } from '../../routes/routes';
 import LineItemsTable from './components/LineItemsTable';
 import OrderSummary from './components/OrderSummary';
 
+export type Severity = 'success' | 'error' | 'warning' | 'info';
+
 const Cart = () => {
   const [snackbarState, setSnackbarState] = useState<{
     open: boolean;
     message: string;
-    severity: 'success' | 'error' | 'warning' | 'info';
+    severity: Severity;
   }>({
     open: false,
     message: '',
