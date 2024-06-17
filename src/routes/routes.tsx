@@ -20,7 +20,7 @@ export const REGISTRATION = {
 
 export const ABOUT_US = {
   path: '/about-us',
-  title: 'AboutUs',
+  title: 'About Us',
   icon: <PersonSearch />,
 };
 

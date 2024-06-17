@@ -1,7 +1,8 @@
-import { KeyboardArrowDown, Logout, Menu as MenuIcon, Person2 } from '@mui/icons-material';
+import { KeyboardArrowDown, Logout, Menu as MenuIcon, Person2, ShoppingCart } from '@mui/icons-material';
 import {
   AppBar,
   Avatar,
+  Badge,
   Box,
   Button,
   Chip,
@@ -28,6 +29,7 @@ import { resetClientCredentials } from '../redux/features/authSlice';
 import { useGetUserProfileQuery } from '../redux/services/me';
 import { HOME, LOGIN, USER } from '../routes/routes';
 import { authNavConfig, navConfig } from './config-navigation';
+import { useGetUserCartQuery } from '../redux/services/cart.ts';
 import styles from './header.module.scss';
 
 interface Props {
@@ -50,6 +52,7 @@ const Header = ({ headerHeight }: Props) => {
 
   const { clientCredentials } = useAppSelector((state) => state.auth);
   const { data: userProfile, isLoading, isError, error } = useGetUserProfileQuery();
+  const { data: cartData } = useGetUserCartQuery();
 
   useEffect(() => {
     const handleResize = () => {
@@ -101,16 +104,29 @@ const Header = ({ headerHeight }: Props) => {
   };
 
   const renderNavLinks = (type: 'nav' | 'drawer') => {
+    const updatedNavConfig = [...navConfig];
+    if (clientCredentials) {
+      updatedNavConfig.push({
+        ...USER,
+      });
+    }
+
     if (type === 'nav') {
       return (
         <Stack direction='row' spacing={3} alignItems='center'>
-          {navConfig.map((navItem) => (
+          {updatedNavConfig.map((navItem) => (
             <NavLink
               key={navItem.title}
               to={navItem.path}
               className={({ isActive }) => (isActive ? `${styles.link} ${styles.active}` : styles.link)}
             >
-              {navItem.title}
+              {navItem.title === 'Cart' ? (
+                <Badge badgeContent={cartData?.results[0]?.totalLineItemQuantity || 0} color='primary'>
+                  <ShoppingCart />
+                </Badge>
+              ) : (
+                navItem.title
+              )}
             </NavLink>
           ))}
           {clientCredentials ? (
@@ -173,7 +189,7 @@ const Header = ({ headerHeight }: Props) => {
 
     return (
       <List>
-        {navConfig.map((navItem) => (
+        {updatedNavConfig.map((navItem) => (
           <ListItemButton
             key={navItem.title}
             component={NavLink}
@@ -185,18 +201,6 @@ const Header = ({ headerHeight }: Props) => {
             {navItem.title}
           </ListItemButton>
         ))}
-        {clientCredentials && (
-          <ListItemButton
-            key={USER.title}
-            component={NavLink}
-            to={USER.path}
-            className={styles.drawerLink}
-            onClick={() => setDrawerOpen(false)}
-          >
-            <ListItemIcon>{USER.icon}</ListItemIcon>
-            {USER.title}
-          </ListItemButton>
-        )}
         <Divider />
         {clientCredentials ? (
           <ListItemButton onClick={onLogout} className={styles.drawerLink}>
