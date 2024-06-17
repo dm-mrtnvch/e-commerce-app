@@ -167,11 +167,11 @@ const LineItemsTable = ({ userCart, isLoading, refetch, snackbarState, setSnackb
                 </TableCell>
                 <TableCell>
                   <Stack direction='column' spacing={1}>
-                    {lineItem?.price?.discounted ? (
+                    {lineItem?.price?.discounted && (
                       <Typography fontSize='inherit' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
-                        ${((lineItem?.price?.value?.centAmount ?? 0) / 100).toFixed(2)}
+                        {((lineItem?.price?.value?.centAmount ?? 0) / 100).toFixed(2)}
                       </Typography>
-                    ) : null}
+                    )}
                     $
                     {lineItem?.price?.discounted
                       ? ((lineItem?.price.discounted.value.centAmount ?? 0) / 100).toFixed(2)
