@@ -76,6 +76,9 @@ Any contributions you make are **greatly appreciated**.
 4. Push to the Branch (`git push origin feat/AmazingFeature`)
 5. Open a Pull Request to develop branch
 
+## Project Management 
+https://code-commandos.atlassian.net/jira/software/projects/KAN/boards/1
+
 ## License
 
 Distributed under the MIT License.
