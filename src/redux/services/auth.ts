@@ -33,6 +33,19 @@ export const authApi = createApi({
         },
       }),
     }),
+    clientCredentialsAnonymous: builder.mutation<Credentials, void>({
+      query: () => ({
+        url: `/oauth/${PROJECT_KEY}/anonymous/token`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)}`,
+        },
+        params: {
+          grant_type: 'client_credentials',
+        },
+      }),
+    }),
     login: builder.mutation<Credentials, LoginRequest>({
       query: ({ username, password }) => ({
         url: `oauth/${import.meta.env.VITE_PROJECT_KEY}/customers/token`,
@@ -61,4 +74,9 @@ export const authApi = createApi({
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useClientCredentialsFlowAuthMutation } = authApi;
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useClientCredentialsFlowAuthMutation,
+  useClientCredentialsAnonymousMutation,
+} = authApi;

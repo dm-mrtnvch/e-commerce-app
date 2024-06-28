@@ -1,28 +1,19 @@
-import { Page } from '../../components';
+import { Container } from '@mui/material';
+import { DiscountBanner, Page } from '../../components';
 import { HOME } from '../../routes/routes';
-import { NavLink } from 'react-router-dom';
-import * as ROUTES from '../../routes/routes';
-import styles from './Home.module.scss';
+import discount from '../../assets/images/discount.svg';
 
 const Home = () => {
-  const navLinks = [
-    { ...ROUTES.ABOUT_US, className: styles.aboutUsIcon },
-    { ...ROUTES.CATALOG, className: styles.catalogIcon },
-    { ...ROUTES.CART, className: styles.cartIcon },
-    { ...ROUTES.REGISTRATION, className: styles.registrationIcon },
-    { ...ROUTES.LOGIN, className: styles.loginIcon },
-  ];
-
   return (
     <Page title={HOME.title}>
-      <div className={styles.navLinksContainer}>
-        {navLinks.map((link) => (
-          <NavLink key={link.title} to={link.path} className={styles.navLink}>
-            <span className={`${styles.icon} ${link.className}`}>{link.icon}</span>
-            {link.title}
-          </NavLink>
-        ))}
-      </div>
+      <Container sx={{ my: 2 }}>
+        <DiscountBanner
+          title='Incredible Discount for all products!'
+          description='Use the code below to get 20% off on your next purchase.'
+          code='RS School'
+          asset={discount}
+        />
+      </Container>
     </Page>
   );
 };

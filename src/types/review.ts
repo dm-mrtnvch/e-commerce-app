@@ -5,3 +5,8 @@ export interface ReviewRatingStatistics {
   lowestRating: number;
   ratingsDistribution: unknown;
 }
+
+export interface ReviewReference {
+  id: string;
+  typeId: string;
+}
